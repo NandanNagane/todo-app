@@ -1,6 +1,5 @@
 import * as React from "react";
 import {
-  useAtomValue,
   ActivityIcon,
   ChevronDown,
   FolderSync,
@@ -28,10 +27,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import userAtom from "@/src/store/atoms/userAtom";
+import { userQueryAtom } from "@/src/store/atoms/userQueryAtom";
+import { useAtom, useAtomValue } from "jotai";
 
 export function Profile() {
-  const user = useAtomValue(userAtom);
+  const { data: user } = useAtomValue(userQueryAtom);
 
   const dropdownActions = [
     // Section 2: Main Actions
@@ -110,9 +110,9 @@ export function Profile() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton className="w-fit px-1.5">
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-7 items-center justify-center rounded-xl overflow-hidden">
-                <img src="https://lh3.googleusercontent.com/a/ACg8ocIIuCXepG2kM4chfcZwJ7yaI_MPbVhHIoTMoujKiO4PSPVe2Q=s96-c"  />
+                <img src={user.profilePictureUrl} />
               </div>
-              <span className="truncate font-medium"> {user.userName?.split(" ")[0]}</span>
+              <span className="truncate font-medium"> {user.firstName}</span>
               <ChevronDown className="opacity-50" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>

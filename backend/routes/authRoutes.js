@@ -188,101 +188,72 @@ authRouter.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-//google auth callback 1
-
-// authRouter.get(
-//   "/google/callback",
-//   passport.authenticate("google", {
-//     failureRedirect: `${process.env.UI_URL}/auth/login?error=auth_failed`, // Redirect if login fails
-//     session: false, // Important for JWT/token-based auth
-//   }),
-//   asyncWrap(async (req, res) => {
-//     const acessToken = jwt.sign({ id: req.user._id }, process.env.ACCESS_KEY, {
-//       expiresIn: "1h",
-//     });
-
-//     const refreshToken = jwt.sign(
-//       { id: req.user._id },
-//       process.env.REFRESH_KEY,
-//       {
-//         expiresIn: "7d",
-//       }
-//     );
-
-//     res.cookie("accessToken", acessToken, {
-//       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "Lax", // Allows cookies for cross-origin requests
-//       maxAge: 7 * 24 * 60 * 60 * 1000,
-//     });
-
-//     res.cookie("refreshToken", refreshToken, {
-//       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "Lax", // Allows cookies for cross-origin requests
-//       maxAge: 7 * 24 * 60 * 60 * 1000,
-//     });
-
-//     res.redirect(`${process.env.UI_URL}/app/dashboard`);
-//   })
-// );
 
 
-//google  callback 2
+//google  callback 
 authRouter.get("/google/callback", (req, res, next) => {
- const googleAuth= passport.authenticate("google", { session: false }, (err, user, info) => {
-    // 1. Handle server errors
-    if (err) {
-      return next(err);
+  const googleAuth = passport.authenticate(
+    "google",
+    { session: false },
+    (err, user, info) => {
+      // 1. Handle server errors
+      if (err) {
+        return next(err);
+      }
+
+      // 2. Handle custom "email exists" failure
+      if (info && info.message === "email_exists") {
+        return res.redirect(
+          `${process.env.UI_URL}/auth/login?error=email_exists`
+        );
+      }
+
+      // 3. Handle generic failures
+      if (!user) {
+        return res.redirect(
+          `${process.env.UI_URL}/auth/login?error=auth_failed`
+        );
+      }
+
+      // 4. Handle SUCCESS
+      // The authenticated user is in the 'user' variable from our callback, NOT req.user.
+      try {
+        // Use user._id instead of req.user._id
+        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_KEY, {
+          expiresIn: "7d",
+        });
+
+        // Use user._id instead of req.user._id
+        const refreshToken = jwt.sign(
+          { id: user._id },
+          process.env.REFRESH_KEY,
+          {
+            expiresIn: "15d",
+          }
+        );
+
+        res.cookie("accessToken", accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "Lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "Lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        res.redirect(`${process.env.UI_URL}/app/today`);
+      } catch (tokenError) {
+        return next(tokenError);
+      }
     }
-
-    // 2. Handle custom "email exists" failure
-    if (info && info.message === 'email_exists') {
-      return res.redirect(`${process.env.UI_URL}/auth/login?error=email_exists`);
-    }
-
-    // 3. Handle generic failures
-    if (!user) {
-      return res.redirect(`${process.env.UI_URL}/auth/login?error=auth_failed`);
-    }
-
-    // 4. Handle SUCCESS
-    // The authenticated user is in the 'user' variable from our callback, NOT req.user.
-    try {
-      // Use user._id instead of req.user._id
-      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_KEY, {
-        expiresIn: "7d",
-      });
-
-      // Use user._id instead of req.user._id
-      const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_KEY, {
-        expiresIn: "15d",
-      });
-
-      res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      res.redirect(`${process.env.UI_URL}/app/today`);
-
-    } catch (tokenError) {
-      return next(tokenError);
-    }
-    
-  })
+  );
   googleAuth(req, res, next);
 });
-
 
 //twitter auth
 authRouter.get(

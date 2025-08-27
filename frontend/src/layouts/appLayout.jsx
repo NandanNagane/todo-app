@@ -12,42 +12,32 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
-import userAtom from "../store/atoms/userAtom";
-import { getUser } from "../api/axios";
-import { useNavigate } from "react-router-dom";
-import sidebarAtom from "../store/atoms/sidebarAtom";
-import { useQuery } from "@tanstack/react-query";
+import { userQueryAtom } from "../store/atoms/userQueryAtom";
 
 export default function AppLayout() {
-  const setUser = useSetAtom(userAtom);
-  const navigate = useNavigate();
+  const { isLoading, isError, error } = useAtomValue(userQueryAtom);
+  const data=useAtomValue(userQueryAtom);
+  // console.log(data.data);
+  
 
-  const { data: user, isLoading, isError } = useQuery({
-    queryKey: ["user"],
-    queryFn: getUser,
-    retry: false, // Don't retry on auth errors
-  });
 
   useEffect(() => {
-    if (user) {
-      setUser(user);
+    if (isError && error) {
+      // To throw an error that your `ErrorPage` can interpret, you should throw a `Response` object.
+      // This allows react-router's `errorElement` to access the status code.
+      const status = error.response?.status || 401;
+      throw new Response("Session expired or invalid.", { status });
     }
-    if (isError) {
-      // If we can't get the user, they are not logged in.
-      navigate("/auth/login");
-    }
-  }, [user, isError, setUser, navigate]);
-
-  const [isSidebarOpen, setIsSidebarOpen] = useAtom(sidebarAtom);
+  }, [isError, error]);
 
   if (isLoading) {
     return <div>Loading...</div>; // Or a proper loading skeleton
   }
 
   return (
-    <SidebarProvider open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+    <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2">

@@ -29,7 +29,7 @@ import {
 import { Profile } from "./profile"
  import sidebarAtom from "@/src/store/atoms/sidebarAtom";
 import { useAtomValue } from "jotai"
-import userAtom from "@/src/store/atoms/userAtom"
+
 
 
 // This is sample data.
@@ -266,17 +266,13 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
-  const user=useAtomValue(userAtom)
- 
-  const isSidebarOpen = useAtomValue(sidebarAtom);
 
    
-
   return (
     <Sidebar className="border-r-0 pt-1.5" {...props}>
       <SidebarHeader >
         <div className="flex relative ">
-          <Profile user={user} />
+          <Profile />
         </div>
         <NavMain items={data.navMain} />
       </SidebarHeader>

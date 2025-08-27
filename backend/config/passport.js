@@ -92,43 +92,7 @@ passport.use(
 
 //google startegy
 
-// passport.use(
-//   "google",
-//   new GoogleStrategy(
-//     {
-//       clientID: GOOGLE_CLIENT_ID,
-//       clientSecret: GOOGLE_CLIENT_SECRET,
-//       callbackURL: `${process.env.SERVER_URL}/auth/google/callback`,
-//     },
-//     async function (accessToken, refreshToken, profile, done) {
-//       try {
-//         // The 'created' boolean tells us if this is a new user
-//         const user = await userModel.findOrCreate(
-//           {
-//             googleId: profile.id,
-//           },
-//           {
-//             googleId: profile.id,
-//             userName: profile.displayName,
-//             email: profile.emails[0].value,
-//             profilePictureUrl: profile.photos[0].value,
-//             authProvider: "google",
-//           }
-//         );
 
-//         // --- THIS IS THE KEY LOGIC ---
-//         // If the user was just created (it's their first time), send the email.
-//         if (user.created) {
-//           await sendWelcomeEmail(user.doc);
-//         }
-
-//         return done(null, user.doc);
-//       } catch (err) {
-//         return done(err, null);
-//       }
-//     }
-//   )
-// );
 
 passport.use(
   "google",

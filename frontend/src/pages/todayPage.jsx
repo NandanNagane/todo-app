@@ -1,4 +1,4 @@
-import Dashboard from "../components/Dashboard";
+
 
 import { redirect } from "react-router-dom";
 
@@ -7,7 +7,7 @@ import { redirect } from "react-router-dom";
 export default function todayPage() {
   return (
     <>
-      <Dashboard />
+     <h1>Today page</h1>
     </>
   );
 }

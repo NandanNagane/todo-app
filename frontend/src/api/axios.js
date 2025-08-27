@@ -46,7 +46,9 @@ axiosInstance.interceptors.response.use(
 export async function getUser() {
   try {
     const { data } = await axiosInstance.get("/auth/user");
-    return data.user;
+
+    return data.user; 
+    
   } catch (error) {
     // Check if the error is from a server response (like 401 Unauthorized)
 
