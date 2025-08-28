@@ -269,7 +269,7 @@ export function AppSidebar({
 
    
   return (
-    <Sidebar className="border-r-0 pt-1.5" {...props}>
+    <Sidebar className="border-r-0 pt-1.5 " {...props}>
       <SidebarHeader >
         <div className="flex relative ">
           <Profile />

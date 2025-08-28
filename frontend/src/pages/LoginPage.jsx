@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { handleRedirectError } from "../utils/errorHandler";
 
 export default function LoginPage() {
+  //we are handling redirect errors from social logins  here 
   const [searchParams, setSearchParams] = useSearchParams();
 
   // This hook runs once when the component loads

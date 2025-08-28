@@ -31,14 +31,20 @@ axiosInstance.interceptors.response.use(
         console.error("Error during auto-logout:", logoutError);
       } finally {
         // Only redirect if it's a true session expiration
+        toast.error(
+          "Session expired! Caught by interceptor, redirecting to login."
+        );
         const timer = setTimeout(() => {
           window.location.href = "/auth/login";
         }, 3000);
       }
     }
 
-    // For all other errors (including the 401 on the login page),
-    // let the component's own catch block handle it.
+    if (!error.response) {
+      error.errorType = "NETWORK_ERROR";
+    } else {
+      error.errorType = "SERVER_ERROR";
+    }
     return Promise.reject(error);
   }
 );
@@ -47,14 +53,9 @@ export async function getUser() {
   try {
     const { data } = await axiosInstance.get("/auth/user");
 
-    return data.user; 
-    
+    return data.user;
   } catch (error) {
-    // Check if the error is from a server response (like 401 Unauthorized)
-
-    // Throw a new Response to be caught by the errorElement.
-    // This gives your error component access to the status code.
-    console.error("Network or other error:", error.message);
+    console.error("getUser error:", error.message);
     throw error;
   }
 }

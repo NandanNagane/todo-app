@@ -1,8 +1,11 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { authRoutes } from "./features/auth/auth.routes";
-import ErrorPage from "./pages/ErrorPage";
-import todayPage from "./pages/todayPage";
-import AppLayout from "./layouts/appLayout";
+
+
+import { authRoutes } from "./auth.routes";
+import { appRoutes } from "./app.routes";
+import AppLayout from "../layouts/appLayout";
+import ErrorPage from "../pages/ErrorPage";
+
 
 export const router = createBrowserRouter([
   {
@@ -20,14 +23,8 @@ export const router = createBrowserRouter([
       },
       {
         path: "app",
-        element: <AppLayout/>,
-        children: [
-          {
-            path: "today",
-            element: <todayPage/>,
-         
-          },
-        ],
+        element: <AppLayout />,
+        children: appRoutes
       },
     ],
   },

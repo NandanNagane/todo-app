@@ -47,6 +47,8 @@ export default function LoginForm() {
   });
 
   async function onSubmit(values) {
+    console.log(values);
+    
     setIsLoading(true); // Set loading to true at the start
     try {
       const res = await axiosInstance.post(`/auth/login`, values);

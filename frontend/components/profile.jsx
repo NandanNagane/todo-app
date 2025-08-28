@@ -103,6 +103,8 @@ export function Profile() {
     return null; // or a loading skeleton
   }
 
+  
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>

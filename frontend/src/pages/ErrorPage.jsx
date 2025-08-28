@@ -8,11 +8,22 @@ export default function ErrorPage() {
 
   // If the error is 401, show a dedicated redirect message
   if (error?.status === 401) {
+    useEffect(() => {
+      // Redirect to the login page after a short delay
+      const timer = setTimeout(() => {
+        navigate('/auth/login', { replace: true });
+      }, 3000); // 3-second delay
+
+      // Clean up the timer if the component unmounts before the redirect
+      return () => clearTimeout(timer);
+    }, [navigate]); // The effect depends on the navigate function
+
     return (
       <div id="error-page">
         <h1>401 - Unauthorized</h1>
         <p>Your session has expired or is invalid.</p>
-        <p>Redirecting you to the login page...</p>
+        <p>Redirecting you to the login page in 3 seconds...</p>
+        <p>Or <Link to="/auth/login">click here to go now</Link>.</p>
       </div>
     );
   }

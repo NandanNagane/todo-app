@@ -15,22 +15,15 @@ import {
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { userQueryAtom } from "../store/atoms/userQueryAtom";
+import { useUser } from "../Custom_hooks/useUser";
 
 export default function AppLayout() {
-  const { isLoading, isError, error } = useAtomValue(userQueryAtom);
-  const data=useAtomValue(userQueryAtom);
-  // console.log(data.data);
+
+  const { isLoading, isError, error, isAuthenticated } = useUser();
+
   
-
-
-  useEffect(() => {
-    if (isError && error) {
-      // To throw an error that your `ErrorPage` can interpret, you should throw a `Response` object.
-      // This allows react-router's `errorElement` to access the status code.
-      const status = error.response?.status || 401;
-      throw new Response("Session expired or invalid.", { status });
-    }
-  }, [isError, error]);
+// if (!isAuthenticated) return <UnauthorizedError />;
+// if (isError) return <ErrorComponent error={error} />;
 
   if (isLoading) {
     return <div>Loading...</div>; // Or a proper loading skeleton

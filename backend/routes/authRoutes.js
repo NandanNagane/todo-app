@@ -97,15 +97,18 @@ authRouter.post(
   asyncWrap(async (req, res) => {
     const parsedBody = loginSchema.safeParse(req.body);
 
+    
+
     if (!parsedBody.success) {
       return res.status(400).json({
         success: false,
-        errors: parsedBody.error.flatten().fieldErrors, // Use "errors" key and get fieldErrors
+        errors: parsedBody.error.flatten().fieldErrors, 
       });
     }
 
     const { email, password } = parsedBody.data;
 
+    
     const foundUser = await userModel.findOne({ email: email });
 
     if (!foundUser) {
@@ -116,6 +119,8 @@ authRouter.post(
         },
       });
     }
+
+    
     const isMatch = await bcrypt.compare(password, foundUser.password);
 
     if (!isMatch) {
