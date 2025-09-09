@@ -58,7 +58,7 @@ app.use(passport.session());
 
 // --- Routes ---
 app.use("/auth",authRouter);
-app.use(taskRouter);
+app.use("/task",taskRouter);
 
 // error handler
 app.use(errorHandler);
