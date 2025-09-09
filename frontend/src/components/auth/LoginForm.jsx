@@ -37,6 +37,11 @@ const loginSchema = z.object({
 });
 
 export default function LoginForm() {
+
+
+  console.log(import.meta.env.VITE_SERVER_URL);
+  
+
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
 
