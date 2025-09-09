@@ -1,5 +1,5 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { NavActions } from "@/components/nav-actions";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { NavActions } from "@/components/sidebar/nav-actions";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,19 +15,56 @@ import {
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { userQueryAtom } from "../store/atoms/userQueryAtom";
-import { useUser } from "../Custom_hooks/useUser";
+import { useUser } from "../hooks/useUser";
+import { ErrorBoundary, useErrorBoundary } from "react-error-boundary";
+import RootErrorFallbackpage from "../pages/RootErrorCallbackPage";
+import { LoaderOne } from "@/components/ui/loader";
+import SessionExpiredView from "@/components/session-expiredView";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function AppLayout() {
-
   const { isLoading, isError, error, isAuthenticated } = useUser();
 
-  
-// if (!isAuthenticated) return <UnauthorizedError />;
-// if (isError) return <ErrorComponent error={error} />;
+  const { showBoundary } = useErrorBoundary();
+  useEffect(() => {
+    if (isError && error) {
+      // Trigger error boundary for critical errors
+      if (error?.response?.status === 500) {
+        showBoundary(
+          new Error("Critical server error. Please contact support.")
+        );
+      }
 
-  if (isLoading) {
-    return <div>Loading...</div>; // Or a proper loading skeleton
-  }
+      // Trigger for data corruption
+      if (error?.message?.includes("corrupted")) {
+        showBoundary(
+          new Error("Data corruption detected. Please refresh the page.")
+        );
+      }
+
+      // Network errors with no response
+      if (!error?.response && error?.code === "NETWORK_ERROR") {
+        showBoundary(
+          new Error(
+            "Network connection failed. Please check your internet connection."
+          )
+        );
+      }
+    }
+  }, [isError, error, showBoundary]);
+
+  if (isLoading)
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <LoaderOne />
+      </div>
+    );
+  if (!isAuthenticated)
+    return (
+      <div>
+        <SessionExpiredView />
+      </div>
+    );
 
   return (
     <SidebarProvider>
@@ -37,17 +74,14 @@ export default function AppLayout() {
           <div className={`flex flex-1 items-center gap-2 px-3 `}>
             <SidebarTrigger />
 
-            {/* <Separator
+            <Separator
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
-            /> */}
+            />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbPage
-                    className={`line-clamp-1 `}
-                    onClick={() => console.log("clicked")}
-                  >
+                  <BreadcrumbPage className={`line-clamp-1 `}>
                     Project Management & Task Tracking
                   </BreadcrumbPage>
                 </BreadcrumbItem>
@@ -55,7 +89,7 @@ export default function AppLayout() {
             </Breadcrumb>
           </div>
           <div className="ml-auto px-3">
-            <NavActions />
+            <ModeToggle />
           </div>
         </header>
       </SidebarInset>

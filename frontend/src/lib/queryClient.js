@@ -1,6 +1,6 @@
 // queryClient.js - Enhanced with error monitoring
 import { QueryClient } from "@tanstack/react-query";
-import { handleQueryError } from "./errorHandler";
+import { handleQueryError } from "../lib/errorHandler";
 
 export const queryClient = new QueryClient({
   defaultOptions: {

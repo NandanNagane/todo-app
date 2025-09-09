@@ -8,6 +8,7 @@ import FacebookIcon from "../../assets/facebook.svg?react";
 import GoogleIcon from "../../assets/google.svg?react";
 import TwitterIcon from "../../assets/twitter.svg?react";
 
+
 import {
   Form,
   FormControl,
@@ -17,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
@@ -24,9 +26,10 @@ import { Link, useNavigation, useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Loader2Icon } from "lucide-react";
-import axiosInstance from "@/src/api/axios";
+import axiosInstance from "@/api/axios";
 import { toast } from "sonner";
-import { handleApiError } from "@/src/utils/errorHandler";
+import { handleApiError } from "@/lib/errorHandler";
+
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -68,16 +71,18 @@ export default function LoginForm() {
   return (
     <>
       <div
-        className="min-h-screen w-full overflow-x-hidden overflow-y-auto flex justify-around items-center   "
+        className="min-h-screen w-full overflow-x-hidden overflow-y-auto flex justify-around items-center    "
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundImage: `url(${bgSvg})`,
+         
         }}
       >
+
         <div className="p-5">
           <h1 className="scroll-m-20  text-4xl font-bold tracking-tight text-balance">
-            Sign Up
+            Log in
           </h1>
 
           <div className="mt-4">
@@ -151,9 +156,7 @@ export default function LoginForm() {
                 >
                   <GoogleIcon />
                 </a>
-                <a href="/auth/facebook" title="Login with Facebook">
-                  <FacebookIcon />
-                </a>
+       
                 <a
                   href={`${import.meta.env.VITE_SERVER_URL}/auth/twitter`}
                   title="Login with Twitter"
@@ -183,6 +186,7 @@ export default function LoginForm() {
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
+           
             }}
           ></div>
         </div>

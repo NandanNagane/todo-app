@@ -17,10 +17,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
+
 import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
-import axiosInstance from "@/src/api/axios";
+import axiosInstance from "@/api/axios";
 import { toast } from "sonner";
 
 export const signupSchema = z

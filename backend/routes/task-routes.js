@@ -6,15 +6,22 @@ import passport from 'passport';
 
 
 
-const todosRouter=express.Router();
+const taskRouter=express.Router();
 
 const protect = passport.authenticate('jwt-access', { session: false });
 
-todosRouter.get('/todos',protect,asyncWrap((req,res)=>{
+taskRouter.get('/task',protect,asyncWrap((req,res)=>{
     res.json({
         message:'todos endpoint'
     })
 }))
 
 
-export default todosRouter
+taskRouter.post('/task',protect,asyncWrap((req,res)=>{
+    res.json({
+        message:'task post endpoint'
+    })
+}))
+
+
+export default taskRouter

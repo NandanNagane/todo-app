@@ -1,4 +1,3 @@
-
 export default function errorHandler(err, req, res, next) {
   // Log the error for debugging purposes (optional)
   console.error(err.stack);
@@ -28,7 +27,7 @@ export default function errorHandler(err, req, res, next) {
   // 4. Default to a generic 500 Internal Server Error
   // This catches any other unexpected errors
 
-  // res.redirect(`${process.env.UI_URL}/login`)
+ 
   res.status(500).json({
     success: false,
     message: 'Something went wrong on our end. Please try again later.',

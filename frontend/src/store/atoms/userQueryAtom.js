@@ -1,6 +1,7 @@
+import { getUser } from "@/api/auth";
 import { atom } from "jotai";
 import { atomWithQuery } from "jotai-tanstack-query";
-import { getUser } from "../../api/axios"; // Assuming getUser is in 'src/api/axios.js'
+// Assuming getUser is in 'src/api/auth.js'
 
 /**
  * Formats the user object received from the backend to match frontend needs.

@@ -1,9 +1,8 @@
-;
 import passport from "passport"; 
 
 export default async function refreshMiddleware(req, res, next){
 
-  const fn  = passport.authenticate("jwt-refresh", { session: false }, (err, user, info) => {
+  (passport.authenticate("jwt-refresh", { session: false }, (err, user, info) => {
     // Handle any unexpected errors first
     if (err) {
      
@@ -43,8 +42,6 @@ export default async function refreshMiddleware(req, res, next){
     next();
       
 
-  })
-
-    fn(req,res,next)
+  }))(req,res,next)
 
 }

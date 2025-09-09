@@ -9,18 +9,18 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { queryClient } from "./utils/queryClient";
-import GlobalErrorBoundary from "./components/GlobalErrorBoundry";
+import { queryClient } from "./lib/queryClient";
+
 
 function App() {
   return (
     <>
-     <GlobalErrorBoundary>
+
       <QueryClientProvider client={queryClient}>
         <Toaster richColors position="top-center" />
         <RouterProvider router={router} />
       </QueryClientProvider>
-      </GlobalErrorBoundary>
+
     </>
   );
 }

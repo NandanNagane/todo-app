@@ -1,29 +1,32 @@
 import express from "express";
-import cors from 'cors'
-import authRouter from "./routes/authRoutes.js";
-import mongoose from "mongoose"
+import cors from "cors";
+
+import mongoose from "mongoose";
 import session from "express-session";
 
 import errorHandler from "./middlewares/errorHandler.js";
 
 
-import todosRouter from "./routes/todos.js";
 import cookieParser from "cookie-parser";
 
-import passport from 'passport'; 
-import './config/passport.js'
+import passport from "passport";
+import "./config/passport.js";
 
 import dotenv from "dotenv";
-dotenv.config(); 
+import authRouter from "./routes/auth-routes.js";
+import taskRouter from "./routes/task-routes.js";
+dotenv.config();
 
 // --- Standard Middleware ---
-const app=express();
-app.use(cors({
-  origin:'http://localhost:5173',
-  credentials:true
-}));
+const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 app.use(
   session({
@@ -43,36 +46,28 @@ app.use(
 
     // Optional: configure a cookie, e.g., for security in production
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Only send cookie over HTTPS. Set to true in production.
-      maxAge:  1000 * 60 * 5 // 5 minutes
+      secure: process.env.NODE_ENV === "production", // Only send cookie over HTTPS. Set to true in production.
+      maxAge: 1000 * 60 * 5, // 5 minutes
     },
   })
 );
-
-
-
-
 
 // --- Passport Middleware ---
 app.use(passport.initialize());
 app.use(passport.session());
 
 // --- Routes ---
-app.use('/auth',authRouter);
-app.use(todosRouter)
-
-
-
+app.use("/auth",authRouter);
+app.use(taskRouter);
 
 // error handler
 app.use(errorHandler);
 
-async function main(){
-    await mongoose.connect(process.env.DB_URL)
-    app.listen(process.env.PORT,()=>{
+async function main() {
+  await mongoose.connect(process.env.DB_URL);
+  app.listen(process.env.PORT, () => {
     console.log(`Listening on port ${process.env.PORT}`);
-    
-})
+  });
 }
 
 main();

@@ -2,7 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import LoginForm from "../components/auth/LoginForm";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { handleRedirectError } from "../utils/errorHandler";
+import { handleRedirectError } from "../lib/errorHandler";
 
 export default function LoginPage() {
   //we are handling redirect errors from social logins  here 

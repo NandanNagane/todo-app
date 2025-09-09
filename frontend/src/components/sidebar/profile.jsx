@@ -27,7 +27,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { userQueryAtom } from "@/src/store/atoms/userQueryAtom";
+import { userQueryAtom } from "@/store/atoms/userQueryAtom";
 import { useAtom, useAtomValue } from "jotai";
 
 export function Profile() {

@@ -3,7 +3,7 @@ import { Strategy as JwtStrategy } from "passport-jwt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as FacebookStrategy } from "passport-facebook";
 import { Strategy as TwitterStrategy } from "@superfaceai/passport-twitter-oauth2";
-import { userModel } from "../db.js"; // Adjust path as needed
+import { userModel } from "../db/userModel.js"; // Adjust path as needed
 
 import "dotenv/config";
 import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
@@ -28,10 +28,23 @@ const accessTokenExtractor = (req) => {
 
   return token;
 };
+const refreshTokenExtractor = (req) => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies["refreshToken"];
+  }
+  return token;
+};
 
 const accessOptions = {
   secretOrKey: process.env.ACCESS_KEY,
   jwtFromRequest: accessTokenExtractor,
+};
+
+const refreshOptions = {
+  // IMPORTANT: Use the refresh key here!
+  secretOrKey: process.env.REFRESH_KEY,
+  jwtFromRequest: refreshTokenExtractor,
 };
 
 // We name this strategy 'jwt-access'
@@ -55,21 +68,6 @@ passport.use(
 
 // --- Strategy 2: For Verifying the REFRESH Token ---
 
-// Extractor for the refresh token
-const refreshTokenExtractor = (req) => {
-  let token = null;
-  if (req && req.cookies) {
-    token = req.cookies["refreshToken"];
-  }
-  return token;
-};
-
-const refreshOptions = {
-  // IMPORTANT: Use the refresh key here!
-  secretOrKey: process.env.REFRESH_KEY,
-  jwtFromRequest: refreshTokenExtractor,
-};
-
 // We name this strategy 'jwt-refresh'
 passport.use(
   "jwt-refresh",
@@ -91,8 +89,6 @@ passport.use(
 );
 
 //google startegy
-
-
 
 passport.use(
   "google",
@@ -128,7 +124,7 @@ passport.use(
         return done(null, newUser);
       } catch (error) {
         console.log(error);
-        
+
         return done(error, null);
       }
     }
@@ -182,16 +178,3 @@ passport.use(
     }
   )
 );
-
-//facebook startegy
-// passport.use('facebook',new FacebookStrategy({
-//     clientID: FACEBOOK_APP_ID,
-//     clientSecret: FACEBOOK_APP_SECRET,
-//     callbackURL: "http://localhost:3000/auth/facebook/callback"
-//   },
-//   function(accessToken, refreshToken, profile, done) {
-//     User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-//       return done(err, user);
-//     });
-//   }
-// ));

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Navigate } from "react-router-dom";
+import { toast } from "sonner";
 
 // Get the server URL from environment variables
 const BASE_URL = import.meta.env.VITE_SERVER_URL;
@@ -32,7 +33,7 @@ axiosInstance.interceptors.response.use(
       } finally {
         // Only redirect if it's a true session expiration
         toast.error(
-          "Session expired! Caught by interceptor, redirecting to login."
+          "Session expired! Please relogin.Redirecting to login..."
         );
         const timer = setTimeout(() => {
           window.location.href = "/auth/login";
@@ -49,15 +50,8 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export async function getUser() {
-  try {
-    const { data } = await axiosInstance.get("/auth/user");
 
-    return data.user;
-  } catch (error) {
-    console.error("getUser error:", error.message);
-    throw error;
-  }
-}
+
+
 
 export default axiosInstance;

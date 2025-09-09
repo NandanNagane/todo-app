@@ -4,14 +4,19 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { authRoutes } from "./auth.routes";
 import { appRoutes } from "./app.routes";
 import AppLayout from "../layouts/appLayout";
-import ErrorPage from "../pages/ErrorPage";
+
+import RouteErrorPage from "../pages/RouteErrorPage";
+import RootErrorFallbackpage from "../pages/RootErrorCallbackPage";
+import { ErrorBoundary } from "react-error-boundary";
+import { ThemeProvider } from "@/components/theme-Provider";
+
 
 
 export const router = createBrowserRouter([
   {
     path: "/",
     // element: <RootLayout />,
-    errorElement: <ErrorPage />, // <-- Common error page for all children
+       errorElement: <RouteErrorPage />,// <-- Common error page for all children
     children: [
       {
         index: true, // This is the new way to handle the root path "/"
@@ -23,8 +28,15 @@ export const router = createBrowserRouter([
       },
       {
         path: "app",
-        element: <AppLayout />,
-        children: appRoutes
+        element: (
+              <ThemeProvider>
+            <ErrorBoundary FallbackComponent={RootErrorFallbackpage}>
+            <AppLayout />
+          </ErrorBoundary>
+          </ThemeProvider>
+        ),
+        children: appRoutes,
+      
       },
     ],
   },
