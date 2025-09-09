@@ -3,9 +3,9 @@ import { userModel } from "../db/userModel.js";
 import bcrypt from "bcrypt";
 import { asyncWrap } from "../utils/asyncWrap.js";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
 
+import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
+import dotenv from "dotenv";
 dotenv.config();
 
 const signupSchema = z

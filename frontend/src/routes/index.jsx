@@ -8,7 +8,7 @@ import AppLayout from "../layouts/appLayout";
 import RouteErrorPage from "../pages/RouteErrorPage";
 import RootErrorFallbackpage from "../pages/RootErrorCallbackPage";
 import { ErrorBoundary } from "react-error-boundary";
-import { ThemeProvider } from "@/components/theme-Provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 
 
