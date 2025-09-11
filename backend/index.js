@@ -18,7 +18,7 @@ const app = express();
 // CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://todo-app-steel-delta.vercel.app"],
+    origin: ["http://localhost:5173", "https://todo-app-nandan.vercel.app"],
     credentials: true,
   })
 );
