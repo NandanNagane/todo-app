@@ -3,6 +3,7 @@ import { userModel } from "../db/userModel.js";
 import bcrypt from "bcrypt";
 import { asyncWrap } from "../utils/asyncWrap.js";
 import jwt from "jsonwebtoken";
+import passport from "passport";
 
 import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
 import dotenv from "dotenv";
@@ -43,7 +44,7 @@ const signupSchema = z
   });
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  emailOrUsername: z.string().min(1, { message: "Email or username is required" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
 
@@ -99,15 +100,31 @@ export const loginPost = asyncWrap(async (req, res) => {
     });
   }
 
-  const { email, password } = parsedBody.data;
+  const { emailOrUsername, password } = parsedBody.data;
 
-  const foundUser = await userModel.findOne({ email: email });
+  // Check if input is email or username and search accordingly
+  const isEmail = emailOrUsername.includes('@');
+  const searchQuery = isEmail 
+    ? { email: emailOrUsername }
+    : { userName: emailOrUsername };
+
+  const foundUser = await userModel.findOne(searchQuery);
 
   if (!foundUser) {
     return res.status(404).json({
       success: false,
       errors: {
-        email: ["No user was found with this email."],
+        emailOrUsername: [`No user was found with this ${isEmail ? 'email' : 'username'}.`],
+      },
+    });
+  }
+
+  // Check if user has a password (not OAuth user)
+  if (!foundUser.password) {
+    return res.status(400).json({
+      success: false,
+      errors: {
+        emailOrUsername: ["This account was created with Google. Please use Google login."],
       },
     });
   }
@@ -224,34 +241,6 @@ export const googleCallbackGet = (req, res, next, passport) => {
       }
     }
   ))(req, res, next);
-};
-
-//twitter callback 
-
-export const twitterCallbackGet = async (req, res) => {
-  const accessToken = jwt.sign({ id: req.user._id }, process.env.ACCESS_KEY, {
-    expiresIn: "7d",
-  });
-
-  const refreshToken = jwt.sign(
-    { id: req.user._id },
-    process.env.REFRESH_KEY,
-    {
-      expiresIn: "15d",
-    }
-  );
-
-  res.cookie("accessToken", accessToken, {
-    ...cookieOptions,
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  res.cookie("refreshToken", refreshToken, {
-    ...cookieOptions,
-    maxAge: 15 * 24 * 60 * 60 * 1000,
-  });
-
-  res.redirect(`${process.env.UI_URL}/app/today`);
 };
 
 export const userGet = asyncWrap((req, res) => {

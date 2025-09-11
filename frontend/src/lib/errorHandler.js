@@ -12,19 +12,21 @@ function handleValidationError(errorData, form, showToast) {
     Object.entries(errorData.errors).forEach(([field, messages]) => {
       form.setError(field, {
         type: "server",
-        message: Array.isArray(messages) ? messages[0] : messages,
+   
       });
     });
 
-    // if (showToast) {
-    //   toast.error("Please check the form for errors.");
-    // }
+    // Show toast for validation errors
+    if (showToast) {
+      const firstError = Object.values(errorData.errors)[0];
+      const message = Array.isArray(firstError) ? firstError[0] : firstError;
+      toast.error(message);
+    }
+  } else {
+    // Generic validation error
+    const message = errorData?.message || "Invalid data provided.";
+    if (showToast) toast.error(message);
   }
-  //  else {
-  //   // Generic validation error
-  //   const message = errorData?.message || "Invalid data provided.";
-  //   if (showToast) toast.error(message);
-  // }
 
   return { type: "validation", message: "Validation failed" };
 }
@@ -58,19 +60,27 @@ export function handleApiError(err, form = null, options = {}) {
   }
 
   const { status, data } = err.response;
-
+  console.log(err.response);
+  
+  
   // Handle different status codes
   switch (status) {
     case 400:
-    case 401: // still allows you to NOT show a toast if you need, just add a flag if needed
     case 422:
+      return handleValidationError(data, form, showToast);
+    case 401:
       return handleValidationError(data, form, showToast);
     case 403:
       if (showToast)
         toast.error("You don't have permission to perform this action.");
       return { type: "forbidden", message: "Access denied" };
     case 404:
-      if (showToast) toast.error("The requested resource was not found.");
+      // Check if it's a validation error with specific field errors
+      if (data?.errors && Object.keys(data.errors).length > 0) {   
+        return handleValidationError(data, form, showToast);
+      }
+      // Otherwise, treat as a generic 404
+      if (showToast) toast.error(`The requested resource was not found.`);
       return { type: "not-found", message: "Resource not found" };
     case 500:
       if (showToast) toast.error("Server error. Our team has been notified.");

@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     
     authProvider: {
       type: String,
-      enum: ["google", "facebook", "local", "twitter"],
+      enum: ["google", "local"],
       required: true,
       default: "local",
     },
@@ -30,23 +30,6 @@ const userSchema = new mongoose.Schema(
       },
       unique: true,
       sparse: true, // Allows multiple nulls, only unique if present
-    },
-
-    facebookId: {
-      type: String,
-      required: function () {
-        return this.authProvider === "facebook";
-      },
-      unique: true,
-      sparse: true,
-    },
-    twitterId: {
-      type: String,
-      required: function () {
-        return this.authProvider === "twitter";
-      },
-      unique: true,
-      sparse: true,
     },
   },
   { timestamps: true }

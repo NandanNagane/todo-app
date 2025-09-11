@@ -9,7 +9,6 @@ import {
   loginPost, 
   refreshGet, 
   googleCallbackGet, 
-  twitterCallbackGet, 
   userGet, 
   logoutPost 
 } from '../controllers/authRoutes.controller.js';
@@ -37,24 +36,6 @@ authRouter.get(
 authRouter.get("/google/callback", (req, res, next) => {
   googleCallbackGet(req, res, next, passport);
 });
-
-//twitter auth
-authRouter.get(
-  "/twitter",
-  passport.authenticate("twitter", {
-    scope: ["tweet.read", "users.read"],
-  })
-);
-
-//twitter callback
-authRouter.get(
-  "/twitter/callback",
-  passport.authenticate("twitter", {
-    failureRedirect: `${process.env.UI_URL}/auth/login?error=auth_failed`, // Redirect if login fails
-    session: false, // Important for JWT/token-based auth
-  }),
-  twitterCallbackGet
-);
 
 // get user
 authRouter.get(

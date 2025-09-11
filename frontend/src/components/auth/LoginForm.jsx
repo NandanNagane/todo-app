@@ -4,9 +4,7 @@ import { z } from "zod";
 import bgSvg from "../../assets/Register.svg";
 import womanSvg from "../../assets/woman.svg";
 
-import FacebookIcon from "../../assets/facebook.svg?react";
 import GoogleIcon from "../../assets/google.svg?react";
-import TwitterIcon from "../../assets/twitter.svg?react";
 
 
 import {
@@ -32,7 +30,7 @@ import { handleApiError } from "@/lib/errorHandler";
 
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  emailOrUsername: z.string().min(1, { message: "Email or username is required" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
 
@@ -44,7 +42,7 @@ export default function LoginForm() {
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      emailOrUsername: "",
       password: "",
     },
   });
@@ -93,12 +91,12 @@ export default function LoginForm() {
                 <FormField
                   control={form.control}
                   disabled={isLoading}
-                  name="email"
+                  name="emailOrUsername"
                   render={({ field }) => (
                     <FormItem className="mb-4">
-                      <FormLabel className={"text-lg"}>Email</FormLabel>
+                      <FormLabel className={"text-lg"}>Email or Username</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="Email" {...field} />
+                        <Input type="text" placeholder="Email or Username" {...field} />
                       </FormControl>
 
                       <FormMessage />
@@ -154,13 +152,6 @@ export default function LoginForm() {
                   title="Login with Google"
                 >
                   <GoogleIcon />
-                </a>
-       
-                <a
-                  href={`${import.meta.env.VITE_SERVER_URL}/auth/twitter`}
-                  title="Login with Twitter"
-                >
-                  <TwitterIcon />
                 </a>
               </div>
             </div>

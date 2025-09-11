@@ -1,20 +1,15 @@
 import passport from "passport";
 import { Strategy as JwtStrategy } from "passport-jwt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { Strategy as FacebookStrategy } from "passport-facebook";
-import { Strategy as TwitterStrategy } from "@superfaceai/passport-twitter-oauth2";
 import { userModel } from "../db/userModel.js"; // Adjust path as needed
 
 import "dotenv/config";
 import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
 import AppError from "../utils/appError.js";
 import { asyncWrap } from "../utils/asyncWrap.js";
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-
-const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID;
-const TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET;
-
 const SERVER_URL = process.env.SERVER_URL;
 
 // --- Strategy 1: For Verifying the ACCESS Token ---
@@ -131,50 +126,4 @@ passport.use(
   )
 );
 
-// twitter startegy
 
-passport.use(
-  "twitter",
-  new TwitterStrategy(
-    {
-      clientType: "confidential", //depends on your Twitter app settings, valid values are `confidential` or `public`
-      clientID: TWITTER_CLIENT_ID,
-      clientSecret: TWITTER_CLIENT_SECRET,
-      callbackURL: `${process.env.SERVER_URL}/auth/twitter/callback`,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        // 1. Safely get the photo URL from the profile object
-        const photoUrl =
-          profile.photos && profile.photos[0] ? profile.photos[0].value : null;
-
-        // Pro Tip: Twitter's default image is small. Get a larger one by removing '_normal'.
-        const fullSizePhotoUrl = photoUrl
-          ? photoUrl.replace("_normal", "")
-          : null;
-
-        // 2. Use the URL when finding or creating the user
-        const user = await userModel.findOrCreate(
-          {
-            twitterId: profile.id,
-          },
-          {
-            twitterId: profile.id,
-            userName: profile.displayName,
-            // If email is not available, you need a strategy (e.g., generate a placeholder)
-            email: profile.emails
-              ? profile.emails[0].value
-              : `${profile.username}@twitter.placeholder.com`,
-            profilePictureUrl: fullSizePhotoUrl, // <-- SAVE THE URL HERE
-            authProvider: "twitter",
-            isEmailPaceholder: profile.emails ? false : true,
-          }
-        );
-
-        return done(null, user.doc);
-      } catch (err) {
-        return done(err, null);
-      }
-    }
-  )
-);
