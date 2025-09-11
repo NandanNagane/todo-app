@@ -63,7 +63,7 @@ export default function LoginForm() {
 
       if (res.data.success) {
         toast.success("Login successful");
-        navigate(`/app/dashboard`);
+        navigate(`/app/today`);
       }
     } catch (err) {
       handleApiError(err, form);
