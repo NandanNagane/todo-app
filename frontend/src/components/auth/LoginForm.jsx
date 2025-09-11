@@ -37,11 +37,6 @@ const loginSchema = z.object({
 });
 
 export default function LoginForm() {
-
-
-  console.log(import.meta.env.VITE_SERVER_URL);
-  
-
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,8 +50,7 @@ export default function LoginForm() {
   });
 
   async function onSubmit(values) {
-    console.log(values);
-    
+
     setIsLoading(true); // Set loading to true at the start
     try {
       const res = await axiosInstance.post(`/auth/login`, values);
