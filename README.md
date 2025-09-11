@@ -2,8 +2,8 @@
 
 A full-stack, Todoist-inspired productivity application built with the MERN stack. This project focuses on modern web development practices, including Google OAuth 2.0 for authentication, a serverless-friendly backend, and a beautiful, accessible UI crafted with **shadcn/ui** and **Tailwind CSS**.
 
-**Live App:** [**https://todo-app-clean-frontend.vercel.app/**](https://todo-app-clean-frontend.vercel.app/)  
-**API Endpoint:** [**https://todo-app-clean-backend.vercel.app/**](https://todo-app-clean-backend.vercel.app/)
+**Live App:** [**https://todo-app-nandan.vercel.app**](https://todo-app-nandan.vercel.app/)  
+**API Endpoint:** [**https://todo-nandan-backend.vercel.app**](https://todo-nandan-backend.vercel.app)
 
 ---
 
