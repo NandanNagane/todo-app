@@ -77,6 +77,7 @@ A full-stack, Todoist-inspired productivity application built with the MERN stac
 - **OAuth 2.0 Nuances:** Deepened my understanding of OAuth flows, redirect URIs, and secure token handling in a cross-domain environment.
 - **Serverless MongoDB:** Mastered connection management patterns for MongoDB in a serverless environment to prevent performance bottlenecks.
 - **Component-Driven UI:** Gained valuable experience building a consistent and accessible UI system from the ground up with shadcn/ui.
+- **Modern Data Fetching with TanStack Query:** Implemented sophisticated data fetching and caching strategies. Learned how to manage server state effectively using `useQuery` for data retrieval and `useMutation` for CUD operations, along with query invalidation to keep the UI in sync with the database.
 - **Iterative Development:** Embraced the practice of shipping small, incremental improvements while maintaining a stable production application.
 
 ---
