@@ -26,6 +26,8 @@ A full-stack, Todoist-inspired productivity application built with the MERN stac
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![shadcn/ui](https://img.shields.io/badge/shadcn/ui-000000?style=for-the-badge&logo=shadcnui&logoColor=white)
+![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=for-the-badge&logo=tanstack&logoColor=white)
+![Jotai](https://img.shields.io/badge/Jotai-000000?style=for-the-badge)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
 ---
@@ -49,8 +51,8 @@ A full-stack, Todoist-inspired productivity application built with the MERN stac
 ### Frontend (Vite + React + shadcn/ui)
 - **Routing:** `react-router-dom` for all client-side navigation (`/auth/login`, `/app/today`, etc.).
 - **UI Components:** Built with the highly accessible and composable **shadcn/ui** library.
-- **Data Fetching:** `axios` with custom interceptors for handling authentication and errors.
-- **State Management:** `zustand` for global state and `react-hook-form` for complex forms.
+- **Data Fetching:** `TanStack Query` for server state management and `axios` for API requests.
+- **State Management:** `Jotai` for global state and `react-hook-form` for complex forms.
 
 ### Backend (Express.js + Passport.js)
 - **Authentication:** `passport.js` with the Google OAuth 2.0 strategy.
