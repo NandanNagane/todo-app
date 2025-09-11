@@ -8,6 +8,14 @@ import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+// ✅ Centralized cookie configuration
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  path: "/",
+};
+
 const signupSchema = z
   .strictObject({
     userName: z
@@ -119,7 +127,7 @@ export const loginPost = asyncWrap(async (req, res) => {
     { id: foundUser._id },
     process.env.ACCESS_KEY,
     {
-      expiresIn: "1h",
+      expiresIn: "7d",
     }
   );
 
@@ -127,22 +135,18 @@ export const loginPost = asyncWrap(async (req, res) => {
     { id: foundUser._id },
     process.env.REFRESH_KEY,
     {
-      expiresIn: "7d",
+      expiresIn: "15d",
     }
   );
 
   res.cookie("accessToken", accessToken, {
-    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax", // Allows cookies for cross-origin requests
-    maxAge: 2 * 24 * 60 * 60 * 1000,
+    ...cookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax", // Allows cookies for cross-origin requests
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    ...cookieOptions,
+    maxAge: 15 * 24 * 60 * 60 * 1000,
   });
 
   res.status(200).json({ message: "Logged in", success: true });
@@ -151,16 +155,14 @@ export const loginPost = asyncWrap(async (req, res) => {
 export const refreshGet = asyncWrap(async (req, res) => {
   const user = req.user;
   const newAccessToken = jwt.sign({ id: user._id }, process.env.ACCESS_KEY, {
-    expiresIn: "1h",
+    expiresIn: "7d",
   });
 
   return res
     .status(200)
     .cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
-      maxAge: 60 * 60 * 1000,
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json({ success: true, message: "Token refreshed successfully." });
 });
@@ -207,17 +209,13 @@ export const googleCallbackGet = (req, res, next, passport) => {
         );
 
         res.cookie("accessToken", accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "Lax",
-          maxAge: 2 * 24 * 60 * 60 * 1000,
+          ...cookieOptions,
+          maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "Lax",
-          maxAge: 7 * 24 * 60 * 60 * 1000,
+          ...cookieOptions,
+          maxAge: 15 * 24 * 60 * 60 * 1000,
         });
 
         res.redirect(`${process.env.UI_URL}/app/today`);
@@ -231,30 +229,26 @@ export const googleCallbackGet = (req, res, next, passport) => {
 //twitter callback 
 
 export const twitterCallbackGet = async (req, res) => {
-  const acessToken = jwt.sign({ id: req.user._id }, process.env.ACCESS_KEY, {
-    expiresIn: "1h",
+  const accessToken = jwt.sign({ id: req.user._id }, process.env.ACCESS_KEY, {
+    expiresIn: "7d",
   });
 
   const refreshToken = jwt.sign(
     { id: req.user._id },
     process.env.REFRESH_KEY,
     {
-      expiresIn: "7d",
+      expiresIn: "15d",
     }
   );
 
-  res.cookie("accessToken", acessToken, {
-    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax", // Allows cookies for cross-origin requests
-    maxAge: 2 * 24 * 60 * 60 * 1000,
+  res.cookie("accessToken", accessToken, {
+    ...cookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax", // Allows cookies for cross-origin requests
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    ...cookieOptions,
+    maxAge: 15 * 24 * 60 * 60 * 1000,
   });
 
   res.redirect(`${process.env.UI_URL}/app/today`);
@@ -267,19 +261,9 @@ export const userGet = asyncWrap((req, res) => {
 });
 
 export const logoutPost = asyncWrap((req, res) => {
-  res.clearCookie("accessToken", {
-    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax", // Allows cookies for cross-origin requests
-    path: "/",
-  });
-
-  res.clearCookie("refreshToken", {
-    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax", // Allows cookies for cross-origin requests
-    path: "/",
-  });
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("refreshToken", cookieOptions);
+  
   res.status(200).json({
     success: true,
     message: "Logged Out Successfully",
