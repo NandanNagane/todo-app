@@ -257,7 +257,7 @@ export const twitterCallbackGet = async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.redirect(`${process.env.UI_URL}/app/dashboard`);
+  res.redirect(`${process.env.UI_URL}/app/today`);
 };
 
 export const userGet = asyncWrap((req, res) => {

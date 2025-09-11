@@ -9,6 +9,7 @@ import "./config/passport.js";
 import dotenv from "dotenv";
 import authRouter from "./routes/auth-routes.js";
 import taskRouter from "./routes/task-routes.js";
+import connectDB from "./utils/conntect-to-DB.js";
 
 dotenv.config();
 
@@ -17,10 +18,8 @@ const app = express();
 // CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://todo-app-steel-delta.vercel.app"],
+    origin: ["http://localhost:5173", "https://todo-app-steel-delta.vercel.app"],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -47,9 +46,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Connect to MongoDB (for serverless)
-if (mongoose.connection.readyState === 0) {
-  mongoose.connect(process.env.DB_URL);
-}
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
 
 // Routes
 app.use("/auth", authRouter);

@@ -2,8 +2,16 @@ import { useUser } from "@/hooks/useUser";
 import { useEffect } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 import { LoaderOne } from "./ui/loader";
+import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 const SessionExpiredView = () => {
+  const navigate = useNavigate();
+
+  const handleLoginRedirect = () => {
+    navigate("/auth/login");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full space-y-8 p-8">
@@ -30,13 +38,25 @@ const SessionExpiredView = () => {
             Session Expired
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your session has expired for security reasons. Please sign in again to continue.
+            Your session has expired for security reasons. Please Log in again to continue.
           </p>
                     
           {/* Additional help */}
           <p className="mt-4 text-xs text-muted-foreground">
             This helps protect your account from unauthorized access.
           </p>
+          
+          {/* Login button */}
+          <div className="mt-6">
+            <Button 
+              onClick={handleLoginRedirect}
+              className="w-full"
+            >
+              Go to Login
+            </Button>
+            
+          </div>
+          
         </div>
       </div>
     </div>
