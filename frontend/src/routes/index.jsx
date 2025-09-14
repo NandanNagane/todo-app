@@ -30,7 +30,7 @@ export const router = createBrowserRouter([
       {
         path: "app",
         element: (
-              <ThemeProvider>
+              <ThemeProvider storageKey="vite-ui-theme">
             <ErrorBoundary FallbackComponent={RootErrorFallbackpage}>
             <AppLayout />
           </ErrorBoundary>
