@@ -21,6 +21,7 @@ import RootErrorFallbackpage from "../pages/RootErrorCallbackPage";
 import { LoaderOne } from "@/components/ui/loader";
 import SessionExpiredView from "@/components/session-expiredView";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Outlet } from "react-router-dom";
 
 export default function AppLayout() {
   const { isLoading, isError, error, isAuthenticated } = useUser();
@@ -73,25 +74,16 @@ export default function AppLayout() {
         <header className="flex h-14 shrink-0 items-center gap-2">
           <div className={`flex flex-1 items-center gap-2 px-3 `}>
             <SidebarTrigger />
-
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbPage className={`line-clamp-1 `}>
-                    Project Management & Task Tracking
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
           </div>
           <div className="ml-auto px-3">
             <ModeToggle />
           </div>
         </header>
+        <main className="flex flex-1 flex-col overflow-auto">
+          <div className="flex-1 px-8 py-6 max-w-5xl w-full mx-auto">
+            <Outlet />
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

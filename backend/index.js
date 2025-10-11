@@ -57,7 +57,7 @@ app.use(async (req, res, next) => {
 
 // Routes
 app.use("/auth", authRouter);
-app.use("/task", taskRouter);
+app.use("/tasks", taskRouter);
 
 // Basic route for testing
 app.get("/", (req, res) => {

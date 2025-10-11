@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 
 const connectDB =  async () => {
+
   // If already connected, reuse the connection
   if (mongoose.connection.readyState === 1) {
     return mongoose.connection;

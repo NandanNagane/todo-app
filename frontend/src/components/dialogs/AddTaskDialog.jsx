@@ -12,17 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom } from "jotai";
 import { toast } from "sonner";
-import taskAtom from "@/store/atoms/taskAtom";
-import taskListAtom from "@/store/atoms/task-listAtom";
-import addTaskMutationAtom from "@/store/atoms/addTaskMutationAtom";
+import { createTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
 import { motion } from "motion/react";
+import { useState } from "react";
 
 export function AddTaskDialog({ children }) {
-  const [task, setTask] = useAtom(taskAtom);
-  const [taskList, setTaskList] = useAtom(taskListAtom);
-  const [{ mutate: addTask, isPending }] = useAtom(addTaskMutationAtom);
+  const [task, setTask] = useState({ title: "", description: "" });
+  const [open, setOpen] = useState(false);
+  const [{ mutate: addTask, isPending }] = useAtom(createTaskMutationAtom);
 
   const handleTaskInput = (e) => {
     if (e.target.id === "taskInput") {
@@ -44,19 +43,16 @@ export function AddTaskDialog({ children }) {
 
   const handleAddTask = (e) => {
     e.preventDefault();
-    const taskWithTimestamp = {
-      ...task,
-      createdDate: new Date().toLocaleDateString(),
-      createdTime: new Date().toLocaleTimeString(),
-    };
 
-    addTask(taskWithTimestamp, {
+    addTask(task, {
       onSuccess: (data) => {
-        setTaskList((prev) => [...prev, data.task || taskWithTimestamp]);
         setTask({ title: "", description: "" });
         toast.success("Task added successfully!");
+        setOpen(false); // Close dialog on success
       },
       onError: (error) => {
+        console.log('error', error);
+        
         if (error?.response?.status !== 401) {
           toast.error(error?.response?.data?.message || "Failed to add task");
         }
@@ -65,11 +61,11 @@ export function AddTaskDialog({ children }) {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen} >
       <form>
         <DialogTrigger asChild>{children}</DialogTrigger>
 
-        <DialogContent className="sm:max-w-[425px] " showCloseButton={false}>
+        <DialogContent className="sm:max-w-[425px] top-1/3 " showCloseButton={false}>
     
             <DialogHeader>
               <DialogTitle>Add Task</DialogTitle>
@@ -86,6 +82,7 @@ export function AddTaskDialog({ children }) {
                   placeholder="Task Name"
                   className="outline-none text-xl"
                   onChange={handleTaskInput}
+                  value={task.title}
                 />
                 <textarea
                   id="descriptionInput"
@@ -94,23 +91,26 @@ export function AddTaskDialog({ children }) {
                   placeholder="Description"
                   className="outline-none text-sm"
                   onChange={handleTaskInput}
+                  value={task.description}
                 />
               </div>
             </div>
             <Separator />
             <DialogFooter className="flex flex-row justify-end">
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button
-                  type="button"
-                  disabled={isPending || task.title === ""}
-                  onClick={handleAddTask}
-                >
-                  {isPending ? "Adding..." : "Add Task"}
-                </Button>
-              </DialogClose>
+              <Button 
+                variant="outline" 
+                type="button"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={isPending || task.title === ""}
+                onClick={handleAddTask}
+              >
+                {isPending ? "Adding..." : "Add Task"}
+              </Button>
             </DialogFooter>
    
         </DialogContent>

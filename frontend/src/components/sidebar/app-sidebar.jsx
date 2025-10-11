@@ -56,13 +56,13 @@ const data = {
   navMain: [
     {
       title: "Inbox",
-      url: "#",
+      url: "/app/inbox",
       icon: Inbox,
       badge: "2",
     },
     {
       title: "Today",
-      url: "#",
+      url: "/app/today",
       icon: CalendarDays,
       badge: "2",
       isActive: true,
