@@ -42,13 +42,14 @@ export function AddTaskDialog({ children }) {
   };
 
   const handleAddTask = (e) => {
+     setOpen(false);
     e.preventDefault();
 
     addTask(task, {
       onSuccess: (data) => {
         setTask({ title: "", description: "" });
         toast.success("Task added successfully!");
-        setOpen(false); // Close dialog on success
+        // Close dialog on success
       },
       onError: (error) => {
         console.log('error', error);
@@ -89,9 +90,11 @@ export function AddTaskDialog({ children }) {
                   type="text"
                   name="discription"
                   placeholder="Description"
-                  className="outline-none text-sm"
+                  className="outline-none text-sm h-40 overflow-y-auto resize-none "
                   onChange={handleTaskInput}
                   value={task.description}
+
+           
                 />
               </div>
             </div>
@@ -109,7 +112,7 @@ export function AddTaskDialog({ children }) {
                 disabled={isPending || task.title === ""}
                 onClick={handleAddTask}
               >
-                {isPending ? "Adding..." : "Add Task"}
+               Add Task
               </Button>
             </DialogFooter>
    
