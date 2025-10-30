@@ -10,6 +10,8 @@ import { toast } from "sonner";
 export default function InboxPage() {
   // TanStack Query via Jotai atom - data is now the tasks array directly
   const [{ data: taskList = [], isLoading, isError, error }] = useAtom(taskListAtom);
+  console.log(taskList);
+  
   const [{ mutate: toggleTask }] = useAtom(toggleTaskMutationAtom);
     
   const handleToggleTask = (taskId) => {
