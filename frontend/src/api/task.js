@@ -8,6 +8,7 @@ export async function getTasks(filters = {}) {
     if (filters.view) params.append('view', filters.view);
     if (filters.page) params.append('page', filters.page);
     if (filters.limit) params.append('limit', filters.limit);
+ 
     
     const response = await axiosInstance.get(`/tasks?${params.toString()}`);
     return response.data;

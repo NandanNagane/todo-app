@@ -16,16 +16,26 @@ import { getTasks } from "@/api/task";
 export function SearchDialog({ children }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchCompleted, setSearchCompleted] = useState(false);
 
-  // ✅ Only fetch when dialog is open
+  // ✅ Only fetch active tasks when dialog is open
   const { data } = useQuery({
     queryKey: ["tasks", "all"],
-    queryFn: () => getTasks({ view: "all" }),
-    enabled: open, // 🔥 Key change - only fetch when dialog opens
+    queryFn: () => getTasks({ view: "all" }), // Fetches non-completed tasks
+    enabled: open,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // ✅ Only fetch completed tasks when user explicitly searches them
+  const { data: completedData } = useQuery({
+    queryKey: ["tasks", "completed"],
+    queryFn: () => getTasks({ view: "completed" }),
+    enabled: open && searchCompleted, // Only fetch when user clicks "Search completed"
     staleTime: 5 * 60 * 1000,
   });
 
   const taskList = data?.data ?? [];
+  const completedTaskList = completedData?.data ?? [];
 
   // Detect if user is on Mac
   const isMac =
@@ -35,19 +45,22 @@ export function SearchDialog({ children }) {
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Command+K (Mac) or Ctrl+K (Windows/Linux)
+      // Command+K (Mac) or Ctrl+K (Windows/Linux) - only opens dialog
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setOpen((prev) => !prev);
+        if (!open) {
+          setOpen(true); // Only open, don't toggle
+        }
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [open]);
 
   // Filter tasks based on search query
-  const filteredTasks = taskList.filter(
+  const allTasks = searchCompleted ? completedTaskList : taskList;
+  const filteredTasks = allTasks.filter(
     (task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (task.description &&
@@ -70,6 +83,7 @@ export function SearchDialog({ children }) {
 
   const clearSearch = () => {
     setSearchQuery("");
+    setSearchCompleted(false); // Reset to active tasks
   };
 
   const clearRecentSearches = () => {
@@ -83,8 +97,16 @@ export function SearchDialog({ children }) {
     setOpen(false);
   };
 
+  // Clear search when dialog closes
+  const handleOpenChange = (isOpen) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      clearSearch(); // Clear search query when dialog closes
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         className="p-0 max-w-2xl bg-background border-border"
@@ -154,10 +176,30 @@ export function SearchDialog({ children }) {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
+                <div className="text-center py-8 space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    No tasks found for "{searchQuery}"
+                    No {searchCompleted ? "completed " : ""}tasks found for "{searchQuery}"
                   </p>
+                  {!searchCompleted && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSearchCompleted(true)}
+                      className="text-xs"
+                    >
+                      Search completed tasks
+                    </Button>
+                  )}
+                  {searchCompleted && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSearchCompleted(false)}
+                      className="text-xs"
+                    >
+                      ← Back to active tasks
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

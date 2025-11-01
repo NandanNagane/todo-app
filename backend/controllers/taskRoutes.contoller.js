@@ -12,8 +12,9 @@ export const getTasks = asyncWrap(async (req, res) => {
 
     // View-specific filters
     if (view === 'all') {
-        // Return ALL tasks (for search functionality)
-        sort = { createdAt: -1 };
+        // Return all NON-COMPLETED tasks (for search functionality)
+        query.completed = false;
+    
     } else if (view === 'today') {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
