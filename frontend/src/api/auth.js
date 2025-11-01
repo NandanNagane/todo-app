@@ -4,7 +4,7 @@ import axiosInstance from './axios.js';
 export async function getUser() {
   try {
     const { data } = await axiosInstance.get("/auth/user");
-    return data.user;
+    return data.data;
   } catch (error) {
     console.error("getUser error:", error.message);
     throw error;

@@ -43,9 +43,9 @@ const handleTaskInput = (e) => {
     addTask(task, {
       onSuccess: (data) => {
         setTask({ title: "", description: "" });
-         setOpen(false); 
+         setOpen(false);  // Close dialog on success
         toast.success("Task added successfully!");
-        // Close dialog on success
+       
       },
       onError: (error) => {
         console.log("error", error);

@@ -86,7 +86,7 @@ export const signupPost = asyncWrap(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: "Account created successfully.",
+    data: { message: "Account created successfully." },
   });
 });
 
@@ -166,7 +166,10 @@ export const loginPost = asyncWrap(async (req, res) => {
     maxAge: 15 * 24 * 60 * 60 * 1000,
   });
 
-  res.status(200).json({ message: "Logged in", success: true });
+  res.status(200).json({ 
+    success: true,
+    data: { message: "Logged in successfully" }
+  });
 });
 
 export const refreshGet = asyncWrap(async (req, res) => {
@@ -181,7 +184,10 @@ export const refreshGet = asyncWrap(async (req, res) => {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
-    .json({ success: true, message: "Token refreshed successfully." });
+    .json({ 
+      success: true, 
+      data: { message: "Token refreshed successfully." }
+    });
 });
 
 export const googleCallbackGet = (req, res, next, passport) => {
@@ -245,7 +251,8 @@ export const googleCallbackGet = (req, res, next, passport) => {
 
 export const userGet = asyncWrap((req, res) => {
   res.status(200).json({
-    user: req.user,
+    success: true,
+    data: req.user,
   });
 });
 
@@ -255,6 +262,6 @@ export const logoutPost = asyncWrap((req, res) => {
   
   res.status(200).json({
     success: true,
-    message: "Logged Out Successfully",
+    data: { message: "Logged Out Successfully" },
   });
 });

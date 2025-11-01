@@ -131,13 +131,7 @@ export function SearchDialog({ children }) {
                           )}
                         />
                         <div className="flex-1 min-w-0">
-                          <p
-                            className={cn(
-                              "text-sm font-medium",
-                              task.completed &&
-                                "line-through text-muted-foreground"
-                            )}
-                          >
+                          <p className="text-sm font-medium">
                             {task.title}
                           </p>
                           {task.description && (

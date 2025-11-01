@@ -69,7 +69,7 @@ const data = {
     },
     {
       title: "Upcoming",
-      url: "#",
+      url: "/app/upcoming",
       icon: Calendar,
     },
     {
@@ -79,7 +79,7 @@ const data = {
     },
     {
       title: "Completed",
-      url: "#",
+      url: "/app/completed",
       icon: CheckCircle,
     },
   ],

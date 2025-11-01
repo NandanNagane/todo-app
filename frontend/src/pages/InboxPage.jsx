@@ -1,5 +1,6 @@
 import { useAtom } from "jotai";
-import taskListAtom from "@/store/atoms/task-listAtom";
+import { useQuery } from "@tanstack/react-query";
+import { getTasks } from "@/api/task";
 import { toggleTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
 import { AddTaskDialog } from "@/components/dialogs/AddTaskDialog";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,14 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function InboxPage() {
-  // TanStack Query via Jotai atom - data is now the tasks array directly
-  const [{ data: taskList = [], isLoading, isError, error }] = useAtom(taskListAtom);
-  console.log(taskList);
+  // Fetch inbox tasks with view filter
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["tasks", "inbox"],
+    queryFn: () => getTasks({ view: "inbox" }),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  const taskList = data?.data ?? [];
   
   const [{ mutate: toggleTask }] = useAtom(toggleTaskMutationAtom);
     
@@ -114,12 +120,7 @@ export default function InboxPage() {
 
                 {/* Task Content */}
                 <div className="flex-1 min-w-0">
-                  <p
-                    className={cn(
-                      "text-sm font-normal",
-                      task.completed && "line-through text-muted-foreground"
-                    )}
-                  >
+                  <p className="text-sm font-normal">
                     {task.title}
                   </p>
                   

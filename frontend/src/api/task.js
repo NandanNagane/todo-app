@@ -1,9 +1,15 @@
 import axiosInstance from "./axios.js";
 
 // Get all tasks for the authenticated user
-export async function getTasks() {
+export async function getTasks(filters = {}) {
   try {
-    const response = await axiosInstance.get('/tasks');
+    const params = new URLSearchParams();
+    
+    if (filters.view) params.append('view', filters.view);
+    if (filters.page) params.append('page', filters.page);
+    if (filters.limit) params.append('limit', filters.limit);
+    
+    const response = await axiosInstance.get(`/tasks?${params.toString()}`);
     return response.data;
   } catch (error) {
     console.error("getTasks error:", error.message);

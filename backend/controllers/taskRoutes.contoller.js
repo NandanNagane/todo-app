@@ -4,12 +4,61 @@ import AppError from "../utils/appError.js";
 
 // Get all tasks for the authenticated user
 export const getTasks = asyncWrap(async (req, res) => {
-    const tasks = await taskModel.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    const { view, page = 1, limit = 50 } = req.query;
+    const userId = req.user.id;
+
+    let query = { userId };
+    let sort = { createdAt: -1 };
+
+    // View-specific filters
+    if (view === 'today') {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+        query.dueDate = { $gte: startOfDay, $lte: endOfDay };
+        query.completed = false;
+        sort = { dueDate: 1, priority: -1 };
+    } else if (view === 'upcoming') {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        query.dueDate = { $gte: tomorrow };
+        query.completed = false;
+        sort = { dueDate: 1, priority: -1 };
+    } else if (view === 'completed') {
+        query.completed = true;
+        sort = { completedAt: -1 };
+    } else {
+        // inbox/default - only non-completed tasks
+        query.completed = false;
+        sort = { createdAt: -1 };
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  
+    
+
+    const [tasks, total] = await Promise.all([
+        taskModel.find(query)
+            .sort(sort)
+            .skip(skip)
+            .limit(parseInt(limit)),
+        taskModel.countDocuments(query)
+    ]);
     
     res.status(200).json({
         success: true,
         count: tasks.length,
-        data: tasks
+        total,
+        data: tasks,
+        pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(total / parseInt(limit)),
+            hasNextPage: skip + tasks.length < total
+        }
     });
 });
 
@@ -31,6 +80,9 @@ export const createTask = asyncWrap(async (req, res) => {
         labels,
         userId: req.user.id,
     });
+
+    console.log(newTask);
+    
 
     res.status(201).json({
         success: true,
@@ -107,7 +159,7 @@ export const deleteTask = asyncWrap(async (req, res) => {
     
     res.status(200).json({
         success: true,
-        message: "Task deleted successfully"
+        data: { message: "Task deleted successfully" }
     });
 });
 
@@ -130,7 +182,7 @@ export const toggleTaskCompletion = asyncWrap(async (req, res) => {
     task.completed = !task.completed;
     await task.save();
     
-    console.log(task);
+
     
     res.status(200).json({
         success: true,
