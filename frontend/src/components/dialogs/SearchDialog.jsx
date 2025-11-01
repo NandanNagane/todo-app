@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAtom } from "jotai";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +11,21 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Search, Clock, Inbox, CalendarDays, Home, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import taskListAtom from "@/store/atoms/task-listAtom";
+import { getTasks } from "@/api/task";
 
 export function SearchDialog({ children }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [{ data: taskList = [] }] = useAtom(taskListAtom);
+
+  // ✅ Only fetch when dialog is open
+  const { data } = useQuery({
+    queryKey: ["tasks", "all"],
+    queryFn: () => getTasks({ view: "all" }),
+    enabled: open, // 🔥 Key change - only fetch when dialog opens
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const taskList = data?.data ?? [];
 
   // Detect if user is on Mac
   const isMac =

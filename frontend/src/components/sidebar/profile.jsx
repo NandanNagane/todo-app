@@ -27,11 +27,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { userQueryAtom } from "@/store/atoms/userQueryAtom";
+import { currentUserAtom } from "@/store/atoms/currentUserAtom";
 import { useAtom, useAtomValue } from "jotai";
 
 export function Profile() {
-  const { data: user } = useAtomValue(userQueryAtom);
+  const { data: user } = useAtomValue(currentUserAtom);
 
   const dropdownActions = [
     // Section 2: Main Actions

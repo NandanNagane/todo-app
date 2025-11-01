@@ -15,9 +15,7 @@ export async function getTasks(filters = {}) {
     console.error("getTasks error:", error.message);
     throw error;
   }
-}
-
-// Create a new task
+}// Create a new task
 export async function createTask(taskData) {
   try {
     const response = await axiosInstance.post('/tasks', taskData);

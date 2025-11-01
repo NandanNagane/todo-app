@@ -24,7 +24,7 @@ This is a full-stack MERN app with a **serverless-first architecture** deployed 
 ### Frontend State Management
 - **TanStack Query**: Primary server state management with `QueryClientProvider` at app root
 - **Jotai**: Global client state with `atomWithQuery` pattern in `/frontend/src/store/atoms/`
-- **User State**: `userQueryAtom` formats backend user objects and adds computed fields (`firstName`, `lastName`)
+- **User State**: `currentUserAtom` formats backend user objects and adds computed fields (`firstName`, `lastName`)
 
 ### Component Architecture
 - **shadcn/ui Pattern**: All UI components in `/frontend/src/components/ui/` follow radix-ui + class-variance-authority pattern

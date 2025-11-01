@@ -11,7 +11,10 @@ export const getTasks = asyncWrap(async (req, res) => {
     let sort = { createdAt: -1 };
 
     // View-specific filters
-    if (view === 'today') {
+    if (view === 'all') {
+        // Return ALL tasks (for search functionality)
+        sort = { createdAt: -1 };
+    } else if (view === 'today') {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date();

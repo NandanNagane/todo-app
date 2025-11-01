@@ -2,21 +2,26 @@ import { atomWithMutation } from 'jotai-tanstack-query';
 import { createTask, updateTask, deleteTask, toggleTaskCompletion } from '@/api/task.js';
 import { queryClient } from '@/lib/queryClient.js';
 
-// Create task mutation with optimistic updates
+// Create task mutation - uses server response to update cache directly
 export const createTaskMutationAtom = atomWithMutation(() => {
   
   return {
   mutationFn: createTask,
   onSuccess: (response) => {
-    // Get the newly created task from server response
+    // ✅ Use server response instead of refetching
     const newTask = response.data;
+    
+    console.log('✅ Task created, updating cache:', newTask);
     
     // Update all relevant view caches with the new task
     ['inbox', 'today', 'upcoming', 'completed'].forEach((view) => {
     const existingData = queryClient.getQueryData(['tasks', view]);
     
     // Only update if this query has been fetched before
-    if (!existingData) return;
+    if (!existingData) {
+      console.log(`⏭️ Skipping ${view} - not fetched yet`);
+      return;
+    }
     
     // Determine if this task belongs in this view
     const shouldIncludeInView = () => {
@@ -37,14 +42,33 @@ export const createTaskMutationAtom = atomWithMutation(() => {
     };
     
     if (shouldIncludeInView()) {
-      queryClient.setQueryData(['tasks', view], (old) => ({
-      ...old,
-      data: [...old.data, newTask],
-      count: old.count + 1,
-      }));
+      console.log(`📝 Adding task to ${view} cache`);
+      queryClient.setQueryData(['tasks', view], (old) => {
+        // Handle paginated data structure (for completed page)
+        if (old.pages) {
+          return {
+            ...old,
+            pages: old.pages.map((page, index) => 
+              index === 0 
+                ? { ...page, data: [newTask, ...page.data], total: page.total + 1 }
+                : page
+            )
+          };
+        }
+        
+        // Handle regular data structure (for other pages)
+        return {
+          ...old,
+          data: [newTask, ...old.data],
+          count: (old.count || 0) + 1,
+        };
+      });
+    } else {
+      console.log(`⏭️ Task doesn't belong in ${view}`);
     }
     });
   },
+  // No onSettled with invalidateQueries - we're updating cache directly!
   };
 });
 
@@ -67,46 +91,64 @@ export const toggleTaskMutationAtom = atomWithMutation(() => {
 
       // Optimistically update all relevant queries that exist in cache
       ['inbox', 'today', 'upcoming', 'completed'].forEach((view) => {
-        // Only update if this query has been fetched before
         const existingData = queryClient.getQueryData(['tasks', view]);
-        console.log(`📦 Checking ${view}:`, existingData ? 'EXISTS' : 'NOT FOUND', existingData);
         
-        if (!existingData) {
-          // Query not fetched yet, skip it
-          return;
-        }
+        if (!existingData) return;
 
         queryClient.setQueryData(['tasks', view], (old) => {
-          const tasksArray = old.data;
-
-          const taskIndex = tasksArray.findIndex((task) => task._id === taskId);
-          if (taskIndex === -1) {
-            // Task not in this view, that's ok
-            return old;
-          }
-
-          const task = tasksArray[taskIndex];
-          const isCompletingTask = !task.completed;
-          
-          console.log(`✅ Found task in ${view}, completing: ${isCompletingTask}`);
-
-          // If completing task, remove from current view (unless it's completed view)
-          // If uncompleting task, remove from completed view
-          if (
-            (isCompletingTask && view !== 'completed') ||
-            (!isCompletingTask && view === 'completed')
-          ) {
-            console.log(`🗑️ Removing task from ${view}`);
-            const filteredTasks = tasksArray.filter((t) => t._id !== taskId);
-            
+          // Handle paginated data (CompletedPage uses infinite query)
+          if (old.pages) {
             return {
               ...old,
-              data: filteredTasks,
-              count: old.count - 1,
+              pages: old.pages.map((page) => {
+                const taskIndex = page.data.findIndex((task) => task._id === taskId);
+                if (taskIndex === -1) return page;
+
+                const task = page.data[taskIndex];
+                const isCompletingTask = !task.completed;
+
+                // Remove from completed view when uncompleting
+                if (!isCompletingTask && view === 'completed') {
+                  return {
+                    ...page,
+                    data: page.data.filter((t) => t._id !== taskId),
+                    total: page.total - 1,
+                  };
+                }
+
+                // Update task status
+                const updatedData = [...page.data];
+                updatedData[taskIndex] = {
+                  ...task,
+                  completed: !task.completed,
+                  completedAt: !task.completed ? new Date().toISOString() : null,
+                };
+
+                return { ...page, data: updatedData };
+              }),
             };
           }
 
-          // If uncompleting in completed view or completing in other views, update status
+          // Handle regular data (other pages)
+          const tasksArray = old.data;
+          const taskIndex = tasksArray.findIndex((task) => task._id === taskId);
+          
+          if (taskIndex === -1) return old;
+
+          const task = tasksArray[taskIndex];
+          const isCompletingTask = !task.completed;
+
+          // Remove from view when completing (except completed view)
+          if (isCompletingTask && view !== 'completed') {
+            const filteredTasks = tasksArray.filter((t) => t._id !== taskId);
+            return {
+              ...old,
+              data: filteredTasks,
+              count: (old.count || 0) - 1,
+            };
+          }
+
+          // Update task status
           const updatedData = [...tasksArray];
           updatedData[taskIndex] = {
             ...task,
@@ -114,15 +156,31 @@ export const toggleTaskMutationAtom = atomWithMutation(() => {
             completedAt: !task.completed ? new Date().toISOString() : null,
           };
 
-          return {
-            ...old,
-            data: updatedData,
-          };
+          return { ...old, data: updatedData };
         });
       });
 
-      // Return context with previous values
       return { previousData };
+    },
+    onSuccess: (response, taskId) => {
+      // ✅ Use server response to add completed task to completed view
+      const updatedTask = response.data;
+      
+      if (updatedTask.completed) {
+        const completedData = queryClient.getQueryData(['tasks', 'completed']);
+        
+        if (completedData?.pages) {
+          // Add to first page of infinite query
+          queryClient.setQueryData(['tasks', 'completed'], (old) => ({
+            ...old,
+            pages: old.pages.map((page, index) => 
+              index === 0
+                ? { ...page, data: [updatedTask, ...page.data], total: page.total + 1 }
+                : page
+            ),
+          }));
+        }
+      }
     },
     onError: (err, taskId, context) => {
       // Revert all queries on error
@@ -134,10 +192,7 @@ export const toggleTaskMutationAtom = atomWithMutation(() => {
         });
       }
     },
-    onSettled: () => {
-      // Refetch all task queries to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
+    // ❌ Removed onSettled with invalidateQueries - using server response instead!
   };
 });
 
@@ -162,6 +217,20 @@ export const updateTaskMutationAtom = atomWithMutation(() => {
         if (!existingData) return;
 
         queryClient.setQueryData(['tasks', view], (old) => {
+          // Handle paginated data
+          if (old.pages) {
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                data: page.data.map((task) =>
+                  task._id === taskId ? { ...task, ...updates } : task
+                ),
+              })),
+            };
+          }
+
+          // Handle regular data
           const updatedTasks = old.data.map((task) =>
             task._id === taskId ? { ...task, ...updates } : task
           );
@@ -171,6 +240,38 @@ export const updateTaskMutationAtom = atomWithMutation(() => {
       });
 
       return { previousData };
+    },
+    onSuccess: (response) => {
+      // ✅ Use server response to ensure accurate data
+      const updatedTask = response.data;
+      
+      ['inbox', 'today', 'upcoming', 'completed'].forEach((view) => {
+        const existingData = queryClient.getQueryData(['tasks', view]);
+        if (!existingData) return;
+
+        queryClient.setQueryData(['tasks', view], (old) => {
+          // Handle paginated data
+          if (old.pages) {
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                data: page.data.map((task) =>
+                  task._id === updatedTask._id ? updatedTask : task
+                ),
+              })),
+            };
+          }
+
+          // Handle regular data
+          return {
+            ...old,
+            data: old.data.map((task) =>
+              task._id === updatedTask._id ? updatedTask : task
+            ),
+          };
+        });
+      });
     },
     onError: (err, variables, context) => {
       // Revert all queries on error
@@ -182,10 +283,7 @@ export const updateTaskMutationAtom = atomWithMutation(() => {
         });
       }
     },
-    onSettled: () => {
-      // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
+    // ❌ Removed onSettled invalidation - using server response!
   };
 });
 
@@ -210,12 +308,25 @@ export const deleteTaskMutationAtom = atomWithMutation(() => {
         if (!existingData) return;
 
         queryClient.setQueryData(['tasks', view], (old) => {
+          // Handle paginated data
+          if (old.pages) {
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                data: page.data.filter((task) => task._id !== taskId),
+                total: page.total - 1,
+              })),
+            };
+          }
+
+          // Handle regular data
           const filteredTasks = old.data.filter((task) => task._id !== taskId);
 
           return {
             ...old,
             data: filteredTasks,
-            count: old.count - 1,
+            count: (old.count || 0) - 1,
           };
         });
       });
@@ -232,9 +343,7 @@ export const deleteTaskMutationAtom = atomWithMutation(() => {
         });
       }
     },
-    onSettled: () => {
-      // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
+    // ✅ No onSuccess needed - deletion is permanent, optimistic update is enough
+    // ❌ Removed onSettled invalidation - optimistic update handles it!
   };
 });

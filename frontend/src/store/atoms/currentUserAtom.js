@@ -1,7 +1,5 @@
 import { getUser } from "@/api/auth";
-import { atom } from "jotai";
 import { atomWithQuery } from "jotai-tanstack-query";
-// Assuming getUser is in 'src/api/auth.js'
 
 /**
  * Formats the user object received from the backend to match frontend needs.
@@ -27,8 +25,8 @@ const formatUser = (user) => {
   return formattedUser;
 };
 
-export const userQueryAtom = atomWithQuery(() => ({
-  queryKey: ["user"],
+export const currentUserAtom = atomWithQuery(() => ({
+  queryKey: ["currentUser"],
   queryFn: getUser,
   select: (user) => {
     const formattedUser = formatUser(user);

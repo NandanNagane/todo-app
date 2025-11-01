@@ -1,8 +1,8 @@
 import { useAtomValue } from 'jotai';
-import { userQueryAtom } from '../store/atoms/userQueryAtom';
+import { currentUserAtom } from '../store/atoms/currentUserAtom';
 
 export function useUser() {
-  const { data, isLoading, isError, error } = useAtomValue(userQueryAtom);
+  const { data, isLoading, isError, error } = useAtomValue(currentUserAtom);
   
   return {
     user: data,
