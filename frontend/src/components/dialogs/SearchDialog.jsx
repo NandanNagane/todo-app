@@ -85,7 +85,6 @@ export function SearchDialog({ children }) {
 
   const handleTaskClick = (taskId) => {
     // Handle task navigation
-    console.log("Navigate to task:", taskId);
     setOpen(false);
   };
 

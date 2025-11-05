@@ -8,6 +8,7 @@ import RouteErrorPage from "../pages/RouteErrorPage";
 import RootErrorFallbackpage from "../pages/RootErrorCallbackPage";
 import { ErrorBoundary } from "react-error-boundary";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/providers/AuthProvider";
 
 export const router = createBrowserRouter([
   {
@@ -25,11 +26,13 @@ export const router = createBrowserRouter([
       {
         path: "app",
         element: (
-          <ThemeProvider storageKey="vite-ui-theme">
-            <ErrorBoundary FallbackComponent={RootErrorFallbackpage}>
-              <AppLayout />
-            </ErrorBoundary>
-          </ThemeProvider>
+          <AuthProvider>
+            <ThemeProvider storageKey="vite-ui-theme">
+              <ErrorBoundary FallbackComponent={RootErrorFallbackpage}>
+                <AppLayout />
+              </ErrorBoundary>
+            </ThemeProvider>
+          </AuthProvider>
         ),
         children: appRoutes,
       },

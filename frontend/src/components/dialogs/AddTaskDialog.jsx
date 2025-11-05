@@ -48,8 +48,6 @@ const handleTaskInput = (e) => {
        
       },
       onError: (error) => {
-        console.log("error", error);
-
         if (error?.response?.status !== 401) {
           toast.error(error?.response?.data?.message || "Failed to add task");
         }

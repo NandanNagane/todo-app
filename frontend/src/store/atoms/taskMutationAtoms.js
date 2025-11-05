@@ -17,7 +17,6 @@ export const createTaskMutationAtom = atomWithMutation(() => {
       const incompleteData = queryClient.getQueryData(['tasks', 'incomplete']);
       
       if (incompleteData) {
-        console.log('📝 Adding task to incomplete cache');
         queryClient.setQueryData(['tasks', 'incomplete'], (old) => ({
           ...old,
           data: [newTask, ...old.data],
@@ -31,7 +30,6 @@ export const createTaskMutationAtom = atomWithMutation(() => {
       const completedData = queryClient.getQueryData(['tasks', 'completed']);
       
       if (completedData?.pages) {
-        console.log('📝 Adding task to completed cache');
         queryClient.setQueryData(['tasks', 'completed'], (old) => ({
           ...old,
           pages: old.pages.map((page, index) => 
@@ -53,8 +51,6 @@ export const toggleTaskMutationAtom = atomWithMutation(() => {
   return {
     mutationFn: toggleTaskCompletion,
     onMutate: async (taskId) => {
-      console.log('🔄 Toggle mutation started for task:', taskId);
-      
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
 

@@ -12,7 +12,6 @@ export async function getTasks(filters = {}) {
     const response = await axiosInstance.get(`/tasks?${params.toString()}`);
     return response.data;
   } catch (error) {
-    console.error("getTasks error:", error.message);
     throw error;
   }
 }// Create a new task
@@ -21,7 +20,6 @@ export async function createTask(taskData) {
     const response = await axiosInstance.post('/tasks', taskData);
     return response.data;
   } catch (error) {
-    console.error("createTask error:", error.message);
     throw error;
   }
 }
@@ -32,7 +30,6 @@ export async function updateTask({ taskId, updates }) {
     const response = await axiosInstance.patch(`/tasks/${taskId}`, updates);
     return response.data;
   } catch (error) {
-    console.error("updateTask error:", error.message);
     throw error;
   }
 }
@@ -43,7 +40,6 @@ export async function deleteTask(taskId) {
     const response = await axiosInstance.delete(`/tasks/${taskId}`);
     return response.data;
   } catch (error) {
-    console.error("deleteTask error:", error.message);
     throw error;
   }
 }
@@ -54,7 +50,6 @@ export async function toggleTaskCompletion(taskId) {
     const response = await axiosInstance.patch(`/tasks/${taskId}/toggle`);
     return response.data;
   } catch (error) {
-    console.error("toggleTaskCompletion error:", error.message);
     throw error;
   }
 }

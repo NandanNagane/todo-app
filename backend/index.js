@@ -1,7 +1,5 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
-import session from "express-session";
 import errorHandler from "./middlewares/errorHandler.js";
 import cookieParser from "cookie-parser";
 import passport from "passport";
@@ -28,22 +26,11 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Session configuration
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 1000 * 60 * 5, // 5 minutes
-    },
-  })
-);
+
 
 // Passport middleware
 app.use(passport.initialize());
-app.use(passport.session());
+
 
 // Connect to MongoDB (for serverless)
 app.use(async (req, res, next) => {

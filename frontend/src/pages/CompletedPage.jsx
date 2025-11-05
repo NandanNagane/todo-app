@@ -181,7 +181,11 @@ export default function CompletedPage() {
   };
 
   const handleDeleteTask = (taskId, e) => {
-    e.stopPropagation();
+    // e is optional - only used when called from card buttons
+    if (e) {
+      e.stopPropagation();
+    }
+    
     deleteTask(taskId, {
       onSuccess: () => {
         toast.success("Task deleted");

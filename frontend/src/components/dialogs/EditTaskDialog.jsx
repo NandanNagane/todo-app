@@ -70,7 +70,6 @@ export function EditTaskDialog({ task, open, onOpenChange }) {
           onOpenChange(false);
         },
         onError: (error) => {
-          console.error("Edit task error:", error);
           if (error?.response?.status !== 401) {
             toast.error(error?.response?.data?.message || "Failed to update task");
           }

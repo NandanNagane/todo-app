@@ -6,7 +6,6 @@ export async function getUser() {
     const response = await axiosInstance.get("/auth/user");
     return response.data.data; // Return the user data directly
   } catch (error) {
-    console.error("getUser error:", error.message);
     throw error;
   }
 }
@@ -16,7 +15,6 @@ export async function logout() {
     const { data } = await axiosInstance.post("/auth/logout");
     return data;
   } catch (error) {
-    console.error("logout error:", error.message);
     throw error;
   }
 }
@@ -26,7 +24,6 @@ export async function login(credentials) {
     const { data } = await axiosInstance.post("/auth/login", credentials);
     return data;
   } catch (error) {
-    console.error("login error:", error.message);
     throw error;
   }
 }

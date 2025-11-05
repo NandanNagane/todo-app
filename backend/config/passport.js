@@ -4,7 +4,6 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { userModel } from "../db/userModel.js"; // Adjust path as needed
 
 import "dotenv/config";
-import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
 import AppError from "../utils/appError.js";
 import { asyncWrap } from "../utils/asyncWrap.js";
 
@@ -92,6 +91,7 @@ passport.use(
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: `${process.env.SERVER_URL}/auth/google/callback`,
+      accessType: 'offline',        // Request refresh token for long-term access
     },
     async function (accessToken, refreshToken, profile, done) {
       const userEmail = profile.emails[0].value;

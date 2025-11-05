@@ -5,7 +5,6 @@ import { asyncWrap } from "../utils/asyncWrap.js";
 import jwt from "jsonwebtoken";
 import passport from "passport";
 
-import { sendWelcomeEmail } from "../utils/sendWelcomeEmail.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -83,8 +82,6 @@ export const signupPost = asyncWrap(async (req, res, next) => {
     password: hash,
     authProvider: "local",
   });
-
-  // sendWelcomeEmail(newUser);
 
   res.status(201).json({
     success: true,

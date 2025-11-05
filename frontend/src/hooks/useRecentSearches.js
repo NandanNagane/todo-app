@@ -25,7 +25,6 @@ export function useRecentSearches() {
         setRecentSearches(Array.isArray(parsed) ? parsed : []);
       }
     } catch (error) {
-      console.error('Failed to load recent searches:', error);
       setRecentSearches([]);
     }
   }, []);
@@ -35,7 +34,7 @@ export function useRecentSearches() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(recentSearches));
     } catch (error) {
-      console.error('Failed to save recent searches:', error);
+      // Silent fail
     }
   }, [recentSearches]);
 

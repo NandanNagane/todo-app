@@ -29,7 +29,7 @@ authRouter.get("/refresh", refreshMiddleware, refreshGet);
 //google auth
 authRouter.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", { scope: ["profile", "email"], prompt: 'select_account' })
 );
 
 //google  callback

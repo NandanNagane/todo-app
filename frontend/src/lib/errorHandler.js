@@ -35,16 +35,7 @@ function handleValidationError(errorData, form, showToast) {
  * Global API error handler for form submissions and API calls
  */
 export function handleApiError(err, form = null, options = {}) {
-  const { showToast = true, logError = true } = options;
-
-  if (logError) {
-    console.group("🚨 API Error");
-    console.error("Message:", err.message);
-    console.error("Status:", err.response?.status);
-    console.error("URL:", err.config?.url);
-    console.error("Full Error:", err);
-    console.groupEnd();
-  }
+  const { showToast = true } = options;
 
   // Network error (server down, no internet)
   if (!err.response) {
@@ -60,7 +51,6 @@ export function handleApiError(err, form = null, options = {}) {
   }
 
   const { status, data } = err.response;
-  console.log(err.response);
   
   
   // Handle different status codes
@@ -119,8 +109,6 @@ export function handleRedirectError(errorCode) {
  * Specialized handler for query errors (TanStack Query)
  */
 export function handleQueryError(error, queryKey) {
-  console.error(`Query error for ${queryKey}:`, error);
-
   // Don't show toast for auth errors - interceptor handles
   if (error?.response?.status === 401) {
     return;

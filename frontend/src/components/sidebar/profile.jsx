@@ -45,8 +45,6 @@ export function Profile() {
       // Redirect to login page after successful logout
       navigate("/auth/login");
     } catch (error) {
-      console.error("Logout failed:", error);
-      // Optionally show error toast/notification
       toast.error("Failed to log out. Please try again.");
     }
   };
