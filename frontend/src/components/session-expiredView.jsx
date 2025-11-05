@@ -1,7 +1,3 @@
-import { useUser } from "@/hooks/useUser";
-import { useEffect } from "react";
-import { useErrorBoundary } from "react-error-boundary";
-import { LoaderOne } from "./ui/loader";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 

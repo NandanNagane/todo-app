@@ -17,18 +17,9 @@ const taskSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high", "urgent"],
-      default: "medium",
-    },
     dueDate: {
       type: Date,
     },
-    labels: [{
-      type: String,
-      trim: true,
-    }],
     // Relationship with User - this establishes the connection
     userId: {
       type: mongoose.Schema.Types.ObjectId,

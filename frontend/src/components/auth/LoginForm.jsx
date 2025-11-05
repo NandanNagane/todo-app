@@ -24,9 +24,9 @@ import { Link, useNavigation, useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Loader2Icon } from "lucide-react";
-import axiosInstance from "@/api/axios";
 import { toast } from "sonner";
 import { handleApiError } from "@/lib/errorHandler";
+import { login } from "@/api/auth";
 
 
 const loginSchema = z.object({
@@ -51,11 +51,11 @@ export default function LoginForm() {
 
     setIsLoading(true); // Set loading to true at the start
     try {
-      const res = await axiosInstance.post(`/auth/login`, values);
+      const res = await login(values);
 
-      if (res.data.success) {
+      if (res.success) {
         toast.success("Login successful");
-        navigate(`/app/today`);
+        navigate(`/app/inbox`);
       }
     } catch (err) {
       handleApiError(err, form);

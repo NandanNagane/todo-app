@@ -5,10 +5,9 @@ export async function getTasks(filters = {}) {
   try {
     const params = new URLSearchParams();
     
-    if (filters.view) params.append('view', filters.view);
     if (filters.page) params.append('page', filters.page);
     if (filters.limit) params.append('limit', filters.limit);
- 
+    if (filters.completed !== undefined) params.append('completed', filters.completed);
     
     const response = await axiosInstance.get(`/tasks?${params.toString()}`);
     return response.data;

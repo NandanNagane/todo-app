@@ -1,4 +1,5 @@
 "use client";
+import { useLocation } from "react-router-dom";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -9,6 +10,7 @@ import { AddTaskDialog } from "@/components/dialogs/AddTaskDialog";
 import { SearchDialog } from "@/components/dialogs/SearchDialog";
 
 export function NavMain({ items }) {
+  const location = useLocation();
   const { actionButtons, navMain } = items;
 
   const renderActionButton = (item) => {
@@ -65,17 +67,20 @@ export function NavMain({ items }) {
           {renderActionButton(item)}
         </SidebarMenuItem>
       ))}
-      {navMain.map((item) => (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild isActive={item.isActive}>
-            <a href={item.url}>
-              <item.icon />
-              <span>{item.title}</span>
-              {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
+      {navMain.map((item) => {
+        const isActive = location.pathname === item.url;
+        return (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton asChild isActive={isActive}>
+              <a href={item.url}>
+                <item.icon />
+                <span>{item.title}</span>
+                {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        );
+      })}
     </SidebarMenu>
   );
 }

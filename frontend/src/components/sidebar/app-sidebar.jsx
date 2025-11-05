@@ -21,7 +21,6 @@ import {
   HomeIcon,
 } from "lucide-react";
 
-import { NavFavorites } from "@/components/sidebar/nav-MyProjects";
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavSecondary } from "@/components/sidebar/nav-secondary";
 
@@ -34,79 +33,47 @@ import {
 } from "@/components/ui/sidebar";
 
 import { Profile } from "./profile";
-import { useAtomValue } from "jotai";
-import { useEffect } from "react";
-import { useUser } from "@/hooks/useUser";
-import { useErrorBoundary } from "react-error-boundary";
-
-// This is sample data.
-const data = {
-  actionButtons: [
-    {
-      title: "Add task",
-      url: "#",
-      icon: Plus,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: Search,
-    },
-  ],
-  navMain: [
-    {
-      title: "Inbox",
-      url: "/app/inbox",
-      icon: Inbox,
-      badge: "2",
-    },
-    {
-      title: "Today",
-      url: "/app/today",
-      icon: CalendarDays,
-      badge: "2",
-      isActive: true,
-    },
-    {
-      title: "Upcoming",
-      url: "/app/upcoming",
-      icon: Calendar,
-    },
-    {
-      title: "Filters & Labels",
-      url: "#",
-      icon: Grid3X3,
-    },
-    {
-      title: "Completed",
-      url: "/app/completed",
-      icon: CheckCircle,
-    },
-  ],
-
-  myProjects: [
-    {
-      name: "Education",
-      url: "#",
-      emoji: "�",
-      badge: "1",
-    },
-    {
-      name: "Home",
-      url: "#",
-      emoji: "🏠",
-      badge: "2",
-    },
-    {
-      name: "Class Planning",
-      url: "#",
-      emoji: "",
-      badge: "18",
-    },
-  ],
-};
+import { useQuery } from "@tanstack/react-query";
+import { getTasks } from "@/api/task";
 
 export function AppSidebar({ ...props }) {
+  // Fetch incomplete tasks count for badge
+  const { data: inboxData } = useQuery({
+    queryKey: ["tasks", "incomplete"],
+    queryFn: () => getTasks({ completed: false }),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  const inboxCount = inboxData?.data?.length || 0;
+
+  const data = {
+    actionButtons: [
+      {
+        title: "Add task",
+        url: "#",
+        icon: Plus,
+      },
+      {
+        title: "Search",
+        url: "#",
+        icon: Search,
+      },
+    ],
+    navMain: [
+      {
+        title: "Inbox",
+        url: "/app/inbox",
+        icon: Inbox,
+        badge: inboxCount > 0 ? String(inboxCount) : undefined,
+   
+      },
+      {
+        title: "Completed",
+        url: "/app/completed",
+        icon: CheckCircle,
+      },
+    ],
+  };
 
   return (
     <Sidebar className="border-r-0 pt-1.5 " {...props}>
@@ -121,9 +88,6 @@ export function AppSidebar({ ...props }) {
           }}
         />
       </SidebarHeader>
-      <SidebarContent>
-        <NavFavorites myProjects={data.myProjects} /> 
-      </SidebarContent>
       <SidebarRail />
     </Sidebar>
   );

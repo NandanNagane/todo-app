@@ -1,24 +1,29 @@
 import { useAtom } from "jotai";
 import { useQuery } from "@tanstack/react-query";
 import { getTasks } from "@/api/task";
-import { toggleTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
+import { toggleTaskMutationAtom, deleteTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
 import { AddTaskDialog } from "@/components/dialogs/AddTaskDialog";
+import { EditTaskDialog } from "@/components/dialogs/EditTaskDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Circle, CheckCircle2, Calendar } from "lucide-react";
+import { Plus, Circle, CheckCircle2, Calendar, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export default function InboxPage() {
-  // Fetch inbox tasks with view filter
+  const [editingTask, setEditingTask] = useState(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  // Fetch all incomplete tasks
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["tasks", "inbox"],
-    queryFn: () => getTasks({ view: "inbox" }),
+    queryKey: ["tasks", "incomplete"],
+    queryFn: () => getTasks({ completed: false }),
     staleTime: 1 * 60 * 1000,
   });
 
   const taskList = data?.data ?? [];
   
   const [{ mutate: toggleTask }] = useAtom(toggleTaskMutationAtom);
+  const [{ mutate: deleteTask }] = useAtom(deleteTaskMutationAtom);
     
   const handleToggleTask = (taskId) => {
     toggleTask(taskId, {
@@ -29,6 +34,24 @@ export default function InboxPage() {
         toast.error(error?.response?.data?.message || "Failed to update task");
       },
     });
+  };
+
+  const handleDeleteTask = (taskId, e) => {
+    e.stopPropagation(); // Prevent task click event
+    deleteTask(taskId, {
+      onSuccess: () => {
+        toast.success("Task deleted");
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || "Failed to delete task");
+      },
+    });
+  };
+
+  const handleEditTask = (task, e) => {
+    e.stopPropagation(); // Prevent any parent click handlers
+    setEditingTask(task);
+    setIsEditDialogOpen(true);
   };
 
   const formatDate = (dateString) => {
@@ -104,7 +127,7 @@ export default function InboxPage() {
             return (
               <div
                 key={task._id}
-                className="group flex items-start gap-3 py-2 px-2 rounded-md hover:bg-accent/50 transition-colors cursor-pointer border-b border-border/40"
+                className="group flex items-start gap-3 py-2 px-2 rounded-md hover:bg-accent/50 transition-colors border-b border-border/40"
               >
                 {/* Checkbox */}
                 <button
@@ -118,8 +141,11 @@ export default function InboxPage() {
                   )}
                 </button>
 
-                {/* Task Content */}
-                <div className="flex-1 min-w-0">
+                {/* Task Content - Clickable to edit */}
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={(e) => handleEditTask(task, e)}
+                >
                   <p className="text-sm font-normal">
                     {task.title}
                   </p>
@@ -138,6 +164,15 @@ export default function InboxPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Delete Button - Shows on hover */}
+                <button
+                  onClick={(e) => handleDeleteTask(task._id, e)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-1 hover:bg-destructive/10 rounded"
+                  title="Delete task"
+                >
+                  <Trash2 className="size-4 text-muted-foreground hover:text-destructive transition-colors" />
+                </button>
               </div>
             );
           })
@@ -156,6 +191,13 @@ export default function InboxPage() {
           </Button>
         </AddTaskDialog>
       </div>
+
+      {/* Edit Task Dialog */}
+      <EditTaskDialog
+        task={editingTask}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+      />
     </div>
   );
 }

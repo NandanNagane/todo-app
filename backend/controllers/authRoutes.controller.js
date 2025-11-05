@@ -44,7 +44,9 @@ const signupSchema = z
   });
 
 const loginSchema = z.object({
-  emailOrUsername: z.string().min(1, { message: "Email or username is required" }),
+  emailOrUsername: z
+    .string()
+    .min(1, { message: "Email or username is required" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
 
@@ -103,8 +105,8 @@ export const loginPost = asyncWrap(async (req, res) => {
   const { emailOrUsername, password } = parsedBody.data;
 
   // Check if input is email or username and search accordingly
-  const isEmail = emailOrUsername.includes('@');
-  const searchQuery = isEmail 
+  const isEmail = emailOrUsername.includes("@");
+  const searchQuery = isEmail
     ? { email: emailOrUsername }
     : { userName: emailOrUsername };
 
@@ -114,7 +116,9 @@ export const loginPost = asyncWrap(async (req, res) => {
     return res.status(404).json({
       success: false,
       errors: {
-        emailOrUsername: [`No user was found with this ${isEmail ? 'email' : 'username'}.`],
+        emailOrUsername: [
+          `No user was found with this ${isEmail ? "email" : "username"}.`,
+        ],
       },
     });
   }
@@ -124,7 +128,9 @@ export const loginPost = asyncWrap(async (req, res) => {
     return res.status(400).json({
       success: false,
       errors: {
-        emailOrUsername: ["This account was created with Google. Please use Google login."],
+        emailOrUsername: [
+          "This account was created with Google. Please use Google login.",
+        ],
       },
     });
   }
@@ -140,13 +146,9 @@ export const loginPost = asyncWrap(async (req, res) => {
     });
   }
 
-  const accessToken = jwt.sign(
-    { id: foundUser._id },
-    process.env.ACCESS_KEY,
-    {
-      expiresIn: "7d",
-    }
-  );
+  const accessToken = jwt.sign({ id: foundUser._id }, process.env.ACCESS_KEY, {
+    expiresIn: "7d",
+  });
 
   const refreshToken = jwt.sign(
     { id: foundUser._id },
@@ -166,9 +168,9 @@ export const loginPost = asyncWrap(async (req, res) => {
     maxAge: 15 * 24 * 60 * 60 * 1000,
   });
 
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
-    data: { message: "Logged in successfully" }
+    data: { message: "Logged in successfully" },
   });
 });
 
@@ -184,70 +186,61 @@ export const refreshGet = asyncWrap(async (req, res) => {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
-    .json({ 
-      success: true, 
-      data: { message: "Token refreshed successfully." }
+    .json({
+      success: true,
+      data: { message: "Token refreshed successfully." },
     });
 });
 
 export const googleCallbackGet = (req, res, next, passport) => {
-  (passport.authenticate(
-    "google",
-    { session: false },
-    (err, user, info) => {
-      // 1. Handle server errors
-      if (err) {
-        return next(err);
-      }
-
-      // 2. Handle custom "email exists" failure
-      if (info && info.message === "email_exists") {
-        return res.redirect(
-          `${process.env.UI_URL}/auth/login?error=email_exists`
-        );
-      }
-
-      // 3. Handle generic failures
-      if (!user) {
-        return res.redirect(
-          `${process.env.UI_URL}/auth/login?error=auth_failed`
-        );
-      }
-
-      // 4. Handle SUCCESS
-      // The authenticated user is in the 'user' variable from our callback, NOT req.user.
-      try {
-        // Use user._id instead of req.user._id
-        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_KEY, {
-          expiresIn: "7d",
-        });
-
-        // Use user._id instead of req.user._id
-        const refreshToken = jwt.sign(
-          { id: user._id },
-          process.env.REFRESH_KEY,
-          {
-            expiresIn: "15d",
-          }
-        );
-
-        res.cookie("accessToken", accessToken, {
-          ...cookieOptions,
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-
-        res.cookie("refreshToken", refreshToken, {
-          ...cookieOptions,
-          maxAge: 15 * 24 * 60 * 60 * 1000,
-        });
-
-        res.redirect(`${process.env.UI_URL}/app/today`);
-      } catch (tokenError) {
-        return next(tokenError);
-      }
+  passport.authenticate("google", { session: false }, (err, user, info) => {
+    // 1. Handle server errors
+    if (err) {
+      return next(err);
     }
-  ))(req, res, next);
+
+    // 2. Handle custom "email exists" failure
+    if (info && info.message === "email_exists") {
+      return res.redirect(
+        `${process.env.UI_URL}/auth/login?error=email_exists`
+      );
+    }
+
+    // 3. Handle generic failures
+    if (!user) {
+      return res.redirect(`${process.env.UI_URL}/auth/login?error=auth_failed`);
+    }
+
+    // 4. Handle SUCCESS
+    // The authenticated user is in the 'user' variable from our callback, NOT req.user.
+    try {
+      // Use user._id instead of req.user._id
+      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_KEY, {
+        expiresIn: "7d",
+      });
+
+      // Use user._id instead of req.user._id
+      const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_KEY, {
+        expiresIn: "15d",
+      });
+
+      res.cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+      });
+
+      res.redirect(`${process.env.UI_URL}/app/inbox`);
+    } catch (tokenError) {
+      return next(tokenError);
+    }
+  })(req, res, next);
 };
+
 
 export const userGet = asyncWrap((req, res) => {
   res.status(200).json({
@@ -259,7 +252,7 @@ export const userGet = asyncWrap((req, res) => {
 export const logoutPost = asyncWrap((req, res) => {
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("refreshToken", cookieOptions);
-  
+
   res.status(200).json({
     success: true,
     data: { message: "Logged Out Successfully" },

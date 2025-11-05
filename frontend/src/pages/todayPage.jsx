@@ -2,23 +2,38 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { getTasks } from "@/api/task";
-import { toggleTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
+import { toggleTaskMutationAtom, deleteTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
 import { Button } from "@/components/ui/button";
 import { AddTaskDialog } from "@/components/dialogs/AddTaskDialog";
-import { ChevronRight, Plus, Circle, CheckCircle2, Calendar, Loader2 } from "lucide-react";
+import { ChevronRight, Plus, Circle, CheckCircle2, Calendar, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function TodayPage() {
   const [showOverdue, setShowOverdue] = useState(true);
   
+  // Fetch all incomplete tasks and filter client-side for today
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["tasks", "today"],
-    queryFn: () => getTasks({ view: "today" }),
+    queryKey: ["tasks", "incomplete"],
+    queryFn: () => getTasks({ completed: false }),
     staleTime: 1 * 60 * 1000,
   });
 
   const [{ mutate: toggleTask }] = useAtom(toggleTaskMutationAtom);
+  const [{ mutate: deleteTask }] = useAtom(deleteTaskMutationAtom);
+  
+  // Client-side filter for today's tasks
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(today);
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  const allTasks = data?.data ?? [];
+  const tasks = allTasks.filter(task => {
+    if (!task.dueDate) return false;
+    const taskDate = new Date(task.dueDate);
+    return taskDate >= today && taskDate <= endOfDay;
+  });
   
   const handleToggleTask = (taskId) => {
     toggleTask(taskId, {
@@ -30,15 +45,26 @@ export default function TodayPage() {
       },
     });
   };
+
+  const handleDeleteTask = (taskId, e) => {
+    e.stopPropagation();
+    deleteTask(taskId, {
+      onSuccess: () => {
+        toast.success("Task deleted");
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || "Failed to delete task");
+      },
+    });
+  };
   
-  const today = new Date();
+  // Date formatting for display
   const formattedDate = today.toLocaleDateString('en-US', { 
     day: 'numeric', 
     month: 'short' 
   });
   const dayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long' });
 
-  const tasks = data?.data ?? [];
   const totalTasks = tasks.length;
 
   // Loading state
@@ -117,19 +143,16 @@ export default function TodayPage() {
                     {task.description}
                   </p>
                 )}
-
-                {/* Priority Badge */}
-                {task.priority && task.priority !== 'medium' && (
-                  <span className={cn(
-                    "inline-block text-xs px-2 py-0.5 rounded mt-1",
-                    task.priority === 'urgent' && "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-                    task.priority === 'high' && "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-                    task.priority === 'low' && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                  )}>
-                    {task.priority}
-                  </span>
-                )}
               </div>
+
+              {/* Delete Button - Shows on hover */}
+              <button
+                onClick={(e) => handleDeleteTask(task._id, e)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-1 hover:bg-destructive/10 rounded"
+                title="Delete task"
+              >
+                <Trash2 className="size-4 text-muted-foreground hover:text-destructive transition-colors" />
+              </button>
             </div>
           ))
         )}

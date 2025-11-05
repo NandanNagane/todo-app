@@ -4,26 +4,22 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useEffect, useState } from "react";
-import { useUser } from "../hooks/useUser";
-import { useErrorBoundary } from "react-error-boundary";
-import { LoaderOne } from "@/components/ui/loader";
-import SessionExpiredView from "@/components/session-expiredView";
+
 import { ModeToggle } from "@/components/mode-toggle";
 import { Outlet, useMatches } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 
 export default function AppLayout() {
-  const { isLoading, isError, error, isAuthenticated } = useUser();
+  // ✅ Simply read user from context - no loading/error states needed here
+
   const matches = useMatches();
 
+  
   // Get current page title from route handle
   const currentRoute = matches[matches.length - 1];
   const pageTitle = currentRoute?.handle?.title;
   const PageIcon = currentRoute?.handle?.icon;
-
-  const { showBoundary } = useErrorBoundary();
 
   // Use Intersection Observer to track when page heading scrolls out of view
   const { ref: headingRef, inView } = useInView({
@@ -32,51 +28,7 @@ export default function AppLayout() {
   });
 
   // Show title in header when heading is not in view (scrolled up)
-  const showTitleInHeader = !inView;
-
-  // Handle critical errors via error boundary
-  useEffect(() => {
-    if (isError && error) {
-      // Trigger error boundary for critical errors
-      if (error?.response?.status === 500) {
-        showBoundary(
-          new Error("Critical server error. Please contact support.")
-        );
-      }
-
-      // Trigger for data corruption
-      if (error?.message?.includes("corrupted")) {
-        showBoundary(
-          new Error("Data corruption detected. Please refresh the page.")
-        );
-      }
-
-      // Network errors with no response
-      if (!error?.response && error?.code === "NETWORK_ERROR") {
-        showBoundary(
-          new Error(
-            "Network connection failed. Please check your internet connection."
-          )
-        );
-      }
-    }
-  }, [isError, error, showBoundary]);
-
-  if (isLoading) {
-    return (
-      <div className="h-screen flex justify-center items-center">
-        <LoaderOne />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div>
-        <SessionExpiredView />
-      </div>
-    );
-  }  return (
+  const showTitleInHeader = !inView;  return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>

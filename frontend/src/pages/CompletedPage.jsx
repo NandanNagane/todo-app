@@ -1,19 +1,20 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { getTasks } from "@/api/task";
-import { toggleTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
+import { toggleTaskMutationAtom, deleteTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
+import { TaskDetailsDialog } from "@/components/dialogs/TaskDetailsDialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, RotateCcw } from "lucide-react";
+import { CheckCircle2, Loader2, RotateCcw, Trash2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { groupTasksByCompletionDate } from "@/lib/groupTasksByCompletionDate";
 
 // TaskGroup removed - virtualization will handle headers inline
 
-function CompletedTaskCard({ task, onUncomplete }) {
+function CompletedTaskCard({ task, onUncomplete, onDelete, onEdit }) {
   const formatDate = (dateString) => {
     if (!dateString) return null;
     try {
@@ -37,7 +38,10 @@ function CompletedTaskCard({ task, onUncomplete }) {
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
+          <div 
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => onEdit(task)}
+          >
             <p className="text-base text-muted-foreground">
               {task.title}
             </p>
@@ -57,22 +61,27 @@ function CompletedTaskCard({ task, onUncomplete }) {
                   Due: {formatDate(task.dueDate)}
                 </span>
               )}
-              {task.priority && (
-                <span className="capitalize">
-                  Priority: {task.priority}
-                </span>
-              )}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onUncomplete(task._id)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Mark as incomplete"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onUncomplete(task._id)}
+              title="Mark as incomplete"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => onDelete(task._id, e)}
+              title="Delete task"
+              className="hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -93,6 +102,8 @@ function EmptyState() {
 
 export default function CompletedPage() {
   const parentRef = useRef(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   // ✅ PAGINATION: Fetch data in chunks (network efficiency)
   const {
@@ -106,7 +117,7 @@ export default function CompletedPage() {
   } = useInfiniteQuery({
     queryKey: ["tasks", "completed"],
     queryFn: ({ pageParam = 1 }) =>
-      getTasks({ view: "completed", page: pageParam, limit: 50 }),
+      getTasks({ completed: true, page: pageParam, limit: 50 }),
     getNextPageParam: (lastPage) => {
       const { pagination } = lastPage;
       return pagination?.hasNextPage ? pagination.page + 1 : undefined;
@@ -116,6 +127,7 @@ export default function CompletedPage() {
   });
 
   const [{ mutate: toggleTask }] = useAtom(toggleTaskMutationAtom);
+  const [{ mutate: deleteTask }] = useAtom(deleteTaskMutationAtom);
 
   // Flatten all pages into single array (do this before early returns)
   const allTasks = data?.pages?.flatMap((page) => page.data) ?? [];
@@ -166,6 +178,23 @@ export default function CompletedPage() {
         toast.error(error?.response?.data?.message || "Failed to update task");
       },
     });
+  };
+
+  const handleDeleteTask = (taskId, e) => {
+    e.stopPropagation();
+    deleteTask(taskId, {
+      onSuccess: () => {
+        toast.success("Task deleted");
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message || "Failed to delete task");
+      },
+    });
+  };
+
+  const handleViewTask = (task) => {
+    setSelectedTask(task);
+    setIsDetailsDialogOpen(true);
   };
 
   // Early returns AFTER all hooks
@@ -253,6 +282,8 @@ export default function CompletedPage() {
                 <CompletedTaskCard
                   task={item.task}
                   onUncomplete={handleUncomplete}
+                  onDelete={handleDeleteTask}
+                  onEdit={handleViewTask}
                 />
               )}
             </div>
@@ -275,6 +306,15 @@ export default function CompletedPage() {
           </p>
         </div>
       )}
+
+      {/* Task Details Dialog */}
+      <TaskDetailsDialog
+        task={selectedTask}
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+        onUncomplete={handleUncomplete}
+        onDelete={handleDeleteTask}
+      />
     </div>
   );
 }

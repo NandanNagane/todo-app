@@ -4,45 +4,20 @@ import AppError from "../utils/appError.js";
 
 // Get all tasks for the authenticated user
 export const getTasks = asyncWrap(async (req, res) => {
-    const { view, page = 1, limit = 50 } = req.query;
+    const { page = 1, limit = 50, completed } = req.query;
     const userId = req.user.id;
 
-    let query = { userId };
-    let sort = { createdAt: -1 };
-
-    // View-specific filters
-    if (view === 'all') {
-        // Return all NON-COMPLETED tasks (for search functionality)
-        query.completed = false;
+    // Build query - only filter by user and optionally by completion status
+    const query = { userId };
     
-    } else if (view === 'today') {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
-        query.dueDate = { $gte: startOfDay, $lte: endOfDay };
-        query.completed = false;
-        sort = { dueDate: 1, priority: -1 };
-    } else if (view === 'upcoming') {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        query.dueDate = { $gte: tomorrow };
-        query.completed = false;
-        sort = { dueDate: 1, priority: -1 };
-    } else if (view === 'completed') {
-        query.completed = true;
-        sort = { completedAt: -1 };
-    } else {
-        // inbox/default - only non-completed tasks
-        query.completed = false;
-        sort = { createdAt: -1 };
+    // Optional: Filter by completion status if provided
+    if (completed !== undefined) {
+        query.completed = completed === 'true';
     }
 
+    // Sort by most recent first
+    const sort = { createdAt: -1 };
     const skip = (parseInt(page) - 1) * parseInt(limit);
-
-  
-    
 
     const [tasks, total] = await Promise.all([
         taskModel.find(query)
@@ -68,7 +43,7 @@ export const getTasks = asyncWrap(async (req, res) => {
 
 // Create a new task
 export const createTask = asyncWrap(async (req, res) => {
-    const { title, description, dueDate, priority, labels } = req.body;
+    const { title, description, dueDate } = req.body;
 
     // Validate required fields
     if (!title) {
@@ -80,12 +55,10 @@ export const createTask = asyncWrap(async (req, res) => {
         title,
         description,
         dueDate,
-        priority,
-        labels,
         userId: req.user.id,
     });
 
-    console.log(newTask);
+
     
 
     res.status(201).json({

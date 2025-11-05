@@ -12,15 +12,14 @@ import { ThemeProvider } from "@/components/theme-provider";
 export const router = createBrowserRouter([
   {
     path: "/",
-    // element: <RootLayout />,
-    errorElement: <RouteErrorPage />, // <-- Common error page for all children
+    errorElement: <RouteErrorPage />,
     children: [
       {
-        index: true, // This is the new way to handle the root path "/"
+        index: true,
         element: <Navigate to="/auth/register" replace />,
       },
       {
-        path: "auth", // Spread your auth routes under a common path
+        path: "auth",
         children: authRoutes,
       },
       {

@@ -8,20 +8,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Search, Clock, Inbox, CalendarDays, Home, X } from "lucide-react";
+import { Search, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTasks } from "@/api/task";
+import { useRecentSearches } from "@/hooks/useRecentSearches";
 
 export function SearchDialog({ children }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCompleted, setSearchCompleted] = useState(false);
+  
+  const { recentSearches, addSearch, removeSearch, clearSearches } = useRecentSearches();
 
   // ✅ Only fetch active tasks when dialog is open
   const { data } = useQuery({
-    queryKey: ["tasks", "all"],
-    queryFn: () => getTasks({ view: "all" }), // Fetches non-completed tasks
+    queryKey: ["tasks", "incomplete"],
+    queryFn: () => getTasks({ completed: false }), // Fetches non-completed tasks
     enabled: open,
     staleTime: 5 * 60 * 1000,
   });
@@ -29,7 +31,7 @@ export function SearchDialog({ children }) {
   // ✅ Only fetch completed tasks when user explicitly searches them
   const { data: completedData } = useQuery({
     queryKey: ["tasks", "completed"],
-    queryFn: () => getTasks({ view: "completed" }),
+    queryFn: () => getTasks({ completed: true }),
     enabled: open && searchCompleted, // Only fetch when user clicks "Search completed"
     staleTime: 5 * 60 * 1000,
   });
@@ -45,7 +47,7 @@ export function SearchDialog({ children }) {
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Command+K (Mac) or Ctrl+K (Windows/Linux) - only opens dialog
+      // Command+K (Mac) or Ctrl+K (Windows/Linux) - only opens dialog   
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         if (!open) {
@@ -67,28 +69,18 @@ export function SearchDialog({ children }) {
         task.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Recent searches (you can implement this with localStorage)
-  const recentSearches = [
-    "2025-08-22",
-    "2025-10-01",
-    "2025-10-08",
-    "2025-09-13",
-  ];
-
-  // Recently viewed items
-  const recentlyViewed = [
-    { title: "Inbox", icon: Inbox },
-    { title: "Today", icon: CalendarDays },
-  ];
-
   const clearSearch = () => {
     setSearchQuery("");
     setSearchCompleted(false); // Reset to active tasks
   };
 
-  const clearRecentSearches = () => {
-    // Implementation for clearing recent searches
-    console.log("Clear recent searches");
+  const handleRecentSearchClick = (search) => {
+    setSearchQuery(search);
+  };
+
+  const handleRemoveRecentSearch = (e, search) => {
+    e.stopPropagation(); // Prevent triggering the parent button's onClick
+    removeSearch(search);
   };
 
   const handleTaskClick = (taskId) => {
@@ -119,9 +111,14 @@ export function SearchDialog({ children }) {
           <div className="flex items-center gap-3 w-full">
             <Search className="size-5 text-muted-foreground flex-shrink-0" />
             <input
-              placeholder="Search or type a command..."
+              placeholder="Search for a task..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim()) {
+                  addSearch(searchQuery);
+                }
+              }}
               className="flex-1 bg-transparent border-0 outline-none text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
               autoFocus
             />
@@ -205,87 +202,44 @@ export function SearchDialog({ children }) {
             </div>
           ) : (
             // Default content when no search query
-            <div className="p-4 pt-0 space-y-4">
+            <div className="p-4 pt-0">
               {/* Recent searches */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Recent searches
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={clearRecentSearches}
-                  >
-                    Clear
-                  </Button>
-                </div>
-                <div className="space-y-1">
-                  {recentSearches.map((search, index) => (
+              {recentSearches.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Recent searches
+                    </p>
                     <Button
-                      key={index}
                       variant="ghost"
-                      className="w-full justify-between h-auto p-2"
-                      onClick={() => setSearchQuery(search)}
+                      size="sm"
+                      className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={clearSearches}
                     >
-                      <div className="flex items-center gap-2">
-                        <Clock className="size-4 text-muted-foreground" />
-                        <span className="text-sm">{search}</span>
-                      </div>
-                      <X className="size-4 text-muted-foreground" />
+                      Clear
                     </Button>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Recently viewed */}
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Recently viewed
-                </p>
-                <div className="space-y-1">
-                  {recentlyViewed.map((item, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      className="w-full justify-start h-auto p-2"
-                    >
-                      <item.icon className="size-4 mr-2 text-muted-foreground" />
-                      <span className="text-sm">{item.title}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Navigation */}
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Navigation
-                </p>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between h-auto p-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <Home className="size-4 text-muted-foreground" />
-                    <span className="text-sm">Go to home</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <kbd className="pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border bg-muted px-1 font-mono text-[10px] font-medium">
-                      G
-                    </kbd>
-                    <span className="text-xs text-muted-foreground">then</span>
-                    <kbd className="pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border bg-muted px-1 font-mono text-[10px] font-medium">
-                      H
-                    </kbd>
+                  <div className="space-y-1">
+                    {recentSearches.map((search, index) => (
+                      <Button
+                        key={index}
+                        variant="ghost"
+                        className="w-full justify-between h-auto p-2"
+                        onClick={() => handleRecentSearchClick(search)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Clock className="size-4 text-muted-foreground" />
+                          <span className="text-sm">{search}</span>
+                        </div>
+                        <X 
+                          className="size-4 text-muted-foreground hover:text-foreground" 
+                          onClick={(e) => handleRemoveRecentSearch(e, search)}
+                        />
+                      </Button>
+                    ))}
                   </div>
-                </Button>
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>
