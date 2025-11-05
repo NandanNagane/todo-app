@@ -123,8 +123,12 @@ export default function CompletedPage() {
       return pagination?.hasNextPage ? pagination.page + 1 : undefined;
     },
     initialPageParam: 1,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 3 * 60 * 1000, // Data fresh for 3 minutes
+    refetchOnMount: false, // Don't refetch when component remounts
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnReconnect: true,
   });
+  
 
   const [{ mutate: toggleTask }] = useAtom(toggleTaskMutationAtom);
   const [{ mutate: deleteTask }] = useAtom(deleteTaskMutationAtom);

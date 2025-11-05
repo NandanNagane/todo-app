@@ -1,97 +1,62 @@
-import { createContext, useContext } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getUser } from '@/api/auth';
-import { LoaderOne } from '@/components/ui/loader';
-import SessionExpiredView from '@/components/session-expiredView';
+import { useQuery } from "@tanstack/react-query";
+import { getUser } from "@/api/auth";
+import { createContext, useContext, useMemo } from "react";
+import SessionExpiredView from "@/components/session-expiredView";
+import { LoaderOne } from "@/components/ui/loader";
 
 const AuthContext = createContext(null);
 
-/**
- * Formats the user object received from the backend to match frontend needs.
- */
-const formatUser = (user) => {
-  if (!user) return null;
-
-  const { userName, _id } = user;
-  const firstName = userName?.split(" ")[0];
-  const lastName = userName?.split(" ")[1];
-
-  return {
-    ...user,
-    id: _id,
-    firstName,
-    lastName,
-  };
-};
-
 export function AuthProvider({ children }) {
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['user'],
-    queryFn: async () => { 
-      const response = await getUser();
-      return response;
-    },
+  const isProtectedRoute = window.location.pathname.startsWith('/app');
+
+  const { data: user, isLoading, isError } = useQuery({
+    queryKey: ["user"],
+    queryFn: getUser,
     retry: false,
     staleTime: Infinity,
-    gcTime: Infinity,
+    gcTime: Infinity, // ✅ Prevent garbage collection
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     refetchOnReconnect: false,
+    refetchOnMount: false,
+    networkMode: 'offlineFirst', // ✅ Use cache first, even if network is available
   });
 
-  // Loading state - show while fetching user
+  // Memoize context value to prevent re-renders
+  const contextValue = useMemo(() => ({ user }), [user]);
+
+  // Don't block rendering on auth routes
+  if (!isProtectedRoute) {
+    return (
+      <AuthContext.Provider value={contextValue}>
+        {children}
+      </AuthContext.Provider>
+    );
+  }
+
+  // Protected routes - handle auth states
   if (isLoading) {
     return (
-      <div className="h-screen flex justify-center items-center">
+      <div className="flex items-center justify-center min-h-screen">
         <LoaderOne />
       </div>
     );
   }
 
-  // Error state - token expired or invalid
   if (isError) {
-    // 401 errors mean session expired
-    if (error?.response?.status === 401) {
-      return <SessionExpiredView />;
-    }
-    
-    // Network or server errors
-    return (
-      <div className="h-screen flex justify-center items-center">
-        <div className="text-center space-y-4">
-          <p className="text-destructive">Failed to load user data</p>
-          <p className="text-sm text-muted-foreground">
-            {error?.message || "Please try again"}
-          </p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
+    return <SessionExpiredView />;
   }
 
-  // Success - provide user to app
-  const user = formatUser(data);
-  
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-/**
- * Custom hook to access auth context
- * Usage: const { user, isAuthenticated } = useAuth();
- */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

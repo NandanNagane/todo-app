@@ -1,7 +1,10 @@
 import { useAtom } from "jotai";
 import { useQuery } from "@tanstack/react-query";
 import { getTasks } from "@/api/task";
-import { toggleTaskMutationAtom, deleteTaskMutationAtom } from "@/store/atoms/taskMutationAtoms";
+import {
+  toggleTaskMutationAtom,
+  deleteTaskMutationAtom,
+} from "@/store/atoms/taskMutationAtoms";
 import { AddTaskDialog } from "@/components/dialogs/AddTaskDialog";
 import { EditTaskDialog } from "@/components/dialogs/EditTaskDialog";
 import { Button } from "@/components/ui/button";
@@ -17,14 +20,17 @@ export default function InboxPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["tasks", "incomplete"],
     queryFn: () => getTasks({ completed: false }),
-    staleTime: 1 * 60 * 1000,
+    staleTime: 3 * 60 * 1000, // Data fresh for 3 minutes
+    refetchOnMount: false, // Don't refetch when component remounts
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnReconnect: true,
   });
 
   const taskList = data?.data ?? [];
-  
+
   const [{ mutate: toggleTask }] = useAtom(toggleTaskMutationAtom);
   const [{ mutate: deleteTask }] = useAtom(deleteTaskMutationAtom);
-    
+
   const handleToggleTask = (taskId) => {
     toggleTask(taskId, {
       onSuccess: () => {
@@ -65,17 +71,17 @@ export default function InboxPage() {
     if (date.getTime() === today.getTime()) {
       return { text: "Today", color: "text-green-600" };
     }
-    
+
     // Check if date is in the past (overdue)
     if (date < today) {
       const day = date.getDate();
-      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const month = date.toLocaleDateString("en-US", { month: "short" });
       return { text: `${day} ${month}`, color: "text-red-600" };
     }
 
     // Future dates
     const day = date.getDate();
-    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const month = date.toLocaleDateString("en-US", { month: "short" });
     return { text: `${day} ${month}`, color: "text-muted-foreground" };
   };
 
@@ -123,7 +129,7 @@ export default function InboxPage() {
         ) : (
           taskList.map((task) => {
             const dateInfo = task.dueDate ? formatDate(task.dueDate) : null;
-            
+
             return (
               <div
                 key={task._id}
@@ -146,10 +152,8 @@ export default function InboxPage() {
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={(e) => handleEditTask(task, e)}
                 >
-                  <p className="text-sm font-normal">
-                    {task.title}
-                  </p>
-                  
+                  <p className="text-sm font-normal">{task.title}</p>
+
                   {task.description && (
                     <p className="text-xs text-muted-foreground mt-1">
                       {task.description}
@@ -158,7 +162,12 @@ export default function InboxPage() {
 
                   {/* Due Date */}
                   {dateInfo && (
-                    <div className={cn("flex items-center gap-1 mt-1 text-xs", dateInfo.color)}>
+                    <div
+                      className={cn(
+                        "flex items-center gap-1 mt-1 text-xs",
+                        dateInfo.color
+                      )}
+                    >
                       <Calendar className="size-3" />
                       <span>{dateInfo.text}</span>
                     </div>

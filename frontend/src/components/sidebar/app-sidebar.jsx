@@ -31,17 +31,21 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useLocation } from "react-router-dom";
 
 import { Profile } from "./profile";
 import { useQuery } from "@tanstack/react-query";
 import { getTasks } from "@/api/task";
 
 export function AppSidebar({ ...props }) {
+   const location = useLocation();
+  const isInboxPage = location.pathname === "/app/inbox";
   // Fetch incomplete tasks count for badge
   const { data: inboxData } = useQuery({
     queryKey: ["tasks", "incomplete"],
     queryFn: () => getTasks({ completed: false }),
     staleTime: 1 * 60 * 1000,
+    enabled: !!isInboxPage, // Only fetch when on inbox page
   });
 
   const inboxCount = inboxData?.data?.length || 0;

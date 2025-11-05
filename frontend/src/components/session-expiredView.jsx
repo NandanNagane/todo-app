@@ -1,11 +1,8 @@
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
 
 const SessionExpiredView = () => {
-  const navigate = useNavigate();
-
   const handleLoginRedirect = () => {
-    navigate("/auth/login");
+    window.location.href = "/auth/login";
   };
 
   return (
