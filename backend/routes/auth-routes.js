@@ -1,5 +1,5 @@
 import express from "express";
-const authRouter = express.Router();
+
 import { asyncWrap } from "../utils/asyncWrap.js";
 import passport from "passport";
 import dotenv from "dotenv";
@@ -9,7 +9,7 @@ import {
   loginPost, 
   refreshGet, 
   googleCallbackGet, 
-  userGet, 
+  getUser, 
   logoutPost 
 } from '../controllers/authRoutes.controller.js';
 import { accessTokenMiddlware } from "../middlewares/accessTokenMiddlware.js";
@@ -17,6 +17,7 @@ import { accessTokenMiddlware } from "../middlewares/accessTokenMiddlware.js";
 dotenv.config();
 
 //signup endpoint
+const authRouter = express.Router();
 
 authRouter.post("/signup", signupPost);
 
@@ -41,7 +42,7 @@ authRouter.get("/google/callback", (req, res, next) => {
 authRouter.get(
   "/user",
   accessTokenMiddlware,
-  userGet
+  getUser
 );
 
 //logout

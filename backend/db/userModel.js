@@ -43,22 +43,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving (only for local auth)
-userSchema.pre("save", async function (next) {
-  if (this.provider === "local" && this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
-
-// Method to compare password (only for local auth)
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  if (this.provider !== "local") {
-    throw new Error("Password comparison not available for OAuth users");
-  }
-  return await bcrypt.compare(candidatePassword, this.password);
-};
-
 // Add findOrCreate plugin
 userSchema.plugin(findOrCreate);
 

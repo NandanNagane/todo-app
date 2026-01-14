@@ -72,15 +72,15 @@ export const signupPost = asyncWrap(async (req, res, next) => {
     });
   }
 
-  const hash = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   // Any error during .create() (e.g., duplicate username if it's unique)
   // will be automatically caught by asyncWrap and sent to your central handler.
   const newUser = await userModel.create({
     email,
     userName,
-    password: hash,
-    authProvider: "local",
+    password: hashedPassword,
+    provider: "local",
   });
 
   res.status(201).json({
@@ -122,6 +122,7 @@ export const loginPost = asyncWrap(async (req, res) => {
 
   // Check if user has a password (not OAuth user)
   if (!foundUser.password) {
+
     return res.status(400).json({
       success: false,
       errors: {
@@ -132,8 +133,10 @@ export const loginPost = asyncWrap(async (req, res) => {
     });
   }
 
+  
   const isMatch = await bcrypt.compare(password, foundUser.password);
 
+  
   if (!isMatch) {
     return res.status(401).json({
       success: false,
@@ -239,7 +242,7 @@ export const googleCallbackGet = (req, res, next, passport) => {
 };
 
 
-export const userGet = asyncWrap((req, res) => {
+export const getUser = asyncWrap((req, res) => {
   res.status(200).json({
     success: true,
     data: req.user,

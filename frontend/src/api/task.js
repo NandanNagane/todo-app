@@ -9,6 +9,7 @@ export async function getTasks(filters = {}) {
     if (filters.limit) params.append('limit', filters.limit);
     if (filters.completed !== undefined) params.append('completed', filters.completed);
     
+    
     const response = await axiosInstance.get(`/tasks?${params.toString()}`);
     return response.data;
   } catch (error) {

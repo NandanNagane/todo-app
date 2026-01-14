@@ -6,7 +6,7 @@ import AppError from "../utils/appError.js";
 export const getTasks = asyncWrap(async (req, res) => {
     const { page = 1, limit = 50, completed } = req.query;
     const userId = req.user.id;
-
+ 
     // Build query - only filter by user and optionally by completion status
     const query = { userId };
     

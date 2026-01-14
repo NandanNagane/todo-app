@@ -35,7 +35,7 @@ const loginSchema = z.object({
 });
 
 export default function LoginForm() {
-  const navigation = useNavigation();
+
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();

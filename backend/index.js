@@ -47,6 +47,7 @@ app.use("/auth", authRouter);
 app.use("/tasks", taskRouter);
 
 // Basic route for testing
+
 app.get("/", (req, res) => {
   res.json({ message: "Backend is running on Vercel!" });
 });
