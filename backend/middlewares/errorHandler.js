@@ -2,6 +2,10 @@ export default function errorHandler(err, req, res, next) {
   // Log the error for debugging purposes (optional)
   console.error(err.stack);
 
+  // Set default values from AppError or fallback to 500
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
   // 1. Mongoose Validation Error
   // This happens if a required field is missing, etc.
   if (err.name === 'ValidationError') {
@@ -24,13 +28,20 @@ export default function errorHandler(err, req, res, next) {
     return res.status(400).json({ success: false, message });
   }
 
-  // 4. Default to a generic 500 Internal Server Error
-  // This catches any other unexpected errors
+  // 4. AppError or any other operational error with statusCode
+  // This handles custom AppError instances
+  if (err.isOperational || err.statusCode < 500) {
+    return res.status(err.statusCode).json({
+      success: false,
+      status: err.status,
+      message: err.message,
+    });
+  }
 
- 
+  // 5. Default to a generic 500 Internal Server Error
+  // This catches any other unexpected programming errors
   res.status(500).json({
     success: false,
     message: 'Something went wrong on our end. Please try again later.',
   });
- 
 }

@@ -3,7 +3,6 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { authRoutes } from "./auth.routes";
 import { appRoutes } from "./app.routes";
 import AppLayout from "../layouts/appLayout";
-
 import RouteErrorPage from "../pages/RouteErrorPage";
 import RootErrorFallbackpage from "../pages/RootErrorCallbackPage";
 import { ErrorBoundary } from "react-error-boundary";

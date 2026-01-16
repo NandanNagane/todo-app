@@ -227,11 +227,11 @@ export default function SignupForm() {
           <p className="mt-3">
             Already have an account ?{"  "}
             <Link to="/auth/login" className="text-blue-500 hover:underline">
-              Login{" "}
+              Login{" "} Or Continue to with Google
             </Link>
           </p>
         </div>
       </div>
     </div>
   );
-}
+} 

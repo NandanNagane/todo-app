@@ -159,8 +159,6 @@ export const toggleTaskCompletion = asyncWrap(async (req, res) => {
     task.completed = !task.completed;
     await task.save();
     
-
-    
     res.status(200).json({
         success: true,
         data: task

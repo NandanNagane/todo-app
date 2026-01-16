@@ -12,7 +12,7 @@ function handleValidationError(errorData, form, showToast) {
     Object.entries(errorData.errors).forEach(([field, messages]) => {
       form.setError(field, {
         type: "server",
-   
+        message: Array.isArray(messages) ? messages[0] : messages, // Use first message
       });
     });
 
@@ -106,7 +106,7 @@ export function handleRedirectError(errorCode) {
 }
 
 /**
- * Specialized handler for query errors (TanStack Query)
+ * Specialized handler for query errors (TanStack Query)  for qerryClient
  */
 export function handleQueryError(error, queryKey) {
   // Don't show toast for auth errors - interceptor handles

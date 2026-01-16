@@ -11,7 +11,6 @@ export const createTaskMutationAtom = atomWithMutation(() => {
     // ✅ Use server response instead of refetching
     const newTask = response.data;
     
-    
     // Update incomplete tasks cache if task is not completed
     if (!newTask.completed) {
       const incompleteData = queryClient.getQueryData(['tasks', 'incomplete']);
