@@ -193,7 +193,7 @@ export const refreshGet = asyncWrap(async (req, res) => {
 });
 
 export const googleCallbackGet = (req, res, next, passport) => {
- const middlewareReturned = passport.authenticate("google", { session: false }, (err, user, info) => {
+  passport.authenticate("google", { session: false }, (err, user, info) => {
     // 1. Handle server errors
     if (err) {
       return next(err);
@@ -238,8 +238,7 @@ export const googleCallbackGet = (req, res, next, passport) => {
     } catch (tokenError) {
       return next(tokenError);
     }
-  }). 
-  middlewareReturned(req, res, next);
+  })(req, res, next);
 };
 
 
